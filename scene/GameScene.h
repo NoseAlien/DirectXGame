@@ -47,12 +47,13 @@ class GameScene {
 	Input* input_ = nullptr;
 	Audio* audio_ = nullptr;
 	DebugText* debugText_ = nullptr;
-
-	Sprite* sprite_ = nullptr;
-	Sprite* moveSprite_ = nullptr;
+	Model* model_ = nullptr;
 
 	//テクスチャハンドル
 	uint32_t textureHandle_ = 0;
+
+	WorldTransform worldTransform_;
+	ViewProjection viewProjection_;
 
 	/// <summary>
 	/// ゲームシーン用
