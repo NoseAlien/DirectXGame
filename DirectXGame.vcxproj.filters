@@ -34,9 +34,6 @@
     <Filter Include="ヘッダー ファイル\audo">
       <UniqueIdentifier>{3a0044cc-1b7d-4ed5-a1a6-9074ed1b1769}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\base">
-      <UniqueIdentifier>{551d5cf3-f4a6-49b9-832f-076a33cef817}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ヘッダー ファイル\base">
       <UniqueIdentifier>{74394124-7d35-4440-8404-7b478262b455}</UniqueIdentifier>
     </Filter>
@@ -51,6 +48,9 @@
     </Filter>
     <Filter Include="ヘッダー ファイル\input">
       <UniqueIdentifier>{d461f61e-3cc4-4b11-b521-37a61c927ae5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\2d\base">
+      <UniqueIdentifier>{551d5cf3-f4a6-49b9-832f-076a33cef817}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -88,13 +88,13 @@
       <Filter>ソース ファイル\audio</Filter>
     </ClCompile>
     <ClCompile Include="base\DirectXCommon.cpp">
-      <Filter>ソース ファイル\base</Filter>
+      <Filter>ソース ファイル\2d\base</Filter>
     </ClCompile>
     <ClCompile Include="base\WinApp.cpp">
-      <Filter>ソース ファイル\base</Filter>
+      <Filter>ソース ファイル\2d\base</Filter>
     </ClCompile>
     <ClCompile Include="base\TextureManager.cpp">
-      <Filter>ソース ファイル\base</Filter>
+      <Filter>ソース ファイル\2d\base</Filter>
     </ClCompile>
     <ClCompile Include="scene\GameScene.cpp">
       <Filter>ソース ファイル\scene</Filter>

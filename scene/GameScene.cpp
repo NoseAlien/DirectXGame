@@ -6,7 +6,9 @@ using namespace DirectX;
 
 GameScene::GameScene() {}
 
-GameScene::~GameScene() {}
+GameScene::~GameScene() {
+	delete sprite_;
+}
 
 void GameScene::Initialize() {
 
@@ -14,9 +16,23 @@ void GameScene::Initialize() {
 	input_ = Input::GetInstance();
 	audio_ = Audio::GetInstance();
 	debugText_ = DebugText::GetInstance();
+
+	//ファイル名を指定してテクスチャを読み込む
+	textureHandle_ = TextureManager::Load("napnose.png");
+	//スプライトの生成
+	sprite_ = Sprite::Create(textureHandle_, {600, 300});
+	moveSprite_ = Sprite::Create(textureHandle_, {100, 50});
+
+	sprite_->SetSize({sprite_->GetSize().x / 5, sprite_->GetSize().y / 5});
 }
 
-void GameScene::Update() {}
+void GameScene::Update() {
+	//移動
+	XMFLOAT2 position = moveSprite_->GetPosition();
+	position.x += 1;
+	position.y += 0.5;
+	moveSprite_->SetPosition(position);
+}
 
 void GameScene::Draw() {
 
@@ -56,6 +72,8 @@ void GameScene::Draw() {
 	/// <summary>
 	/// ここに前景スプライトの描画処理を追加できる
 	/// </summary>
+	sprite_->Draw();
+	moveSprite_->Draw();
 
 	// デバッグテキストの描画
 	debugText_->DrawAll(commandList);
