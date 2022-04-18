@@ -49,10 +49,12 @@ class GameScene {
 	DebugText* debugText_ = nullptr;
 	Model* model_ = nullptr;
 
+	float viewAngle = 0.0f;
+
 	//テクスチャハンドル
 	uint32_t textureHandle_ = 0;
 
-	WorldTransform worldTransform_;
+	WorldTransform worldTransform_[100];
 	ViewProjection viewProjection_;
 
 	/// <summary>
