@@ -51,9 +51,13 @@ void WorldTransform::UpdateMatrix() {
 	matWorld_ *= matRot;            // ワールド行列に回転を反映
 	matWorld_ *= matTrans;          // ワールド行列に平行移動を反映
 
+	matWorldRot_ = XMMatrixIdentity(); // 【改造箇所】ワールド回転行列の変形もリセット
+	matWorldRot_ *= matRot;        // 【改造箇所】ワールド回転行列に回転を反映
+
 	// 親行列の指定がある場合は、掛け算する
 	if (parent_) {
 		matWorld_ *= parent_->matWorld_;
+		matWorldRot_ *= parent_->matWorldRot_;//【改造箇所】親行列にも回転情報を掛け算する
 	}
 
 	// 定数バッファに書き込み

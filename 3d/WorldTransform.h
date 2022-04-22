@@ -27,6 +27,8 @@ struct WorldTransform {
 	DirectX::XMMATRIX matWorld_;
 	// 親となるワールド変換へのポインタ
 	WorldTransform* parent_ = nullptr;
+	// 【改造箇所】回転情報のみのローカル → ワールド変換行列
+	DirectX::XMMATRIX matWorldRot_;
 
 	/// <summary>
 	/// 初期化
