@@ -99,11 +99,15 @@ void GameScene::Update() {
 	playerTransform_.rotation_.z += move.z;
 
 	//カメラの視点と向きをcameraTransform_に合わせる
-	viewProjection_.eye = { 0,10,-30 };
+	XMFLOAT3 camPosition = getRelativeDirection(playerTransform_, { 0,30,-30 });
 
-	viewProjection_.target = { 0,0,0 };
+	viewProjection_.eye = { playerTransform_.translation_.x + camPosition.x
+		,playerTransform_.translation_.y + camPosition.y
+		,playerTransform_.translation_.z + camPosition.z };
 
-	viewProjection_.up = { 0,1,0 };
+	viewProjection_.target = playerTransform_.translation_;
+
+	viewProjection_.up = getRelativeDirection(playerTransform_, { 0,1,0 });
 
 	//行列の再計算
 	viewProjection_.UpdateMatrix();
