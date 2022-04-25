@@ -53,9 +53,11 @@ class GameScene {
 	uint32_t textureHandle_ = 0;
 	uint32_t textureHandle2_ = 0;
 
-	WorldTransform worldTransform_[100];
+	bool trig = false;
+	int targetNum = 0;
 
-	WorldTransform playerTransform_;
+	WorldTransform worldTransform_[100];
+	WorldTransform targetTransform_[3];
 
 	ViewProjection viewProjection_;
 

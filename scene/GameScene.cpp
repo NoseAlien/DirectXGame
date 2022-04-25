@@ -14,7 +14,7 @@ GameScene::~GameScene() {
 XMFLOAT3 getRelativeDirection(WorldTransform rotTarget, XMFLOAT3 relativeDirection)
 {
 	rotTarget.UpdateMatrix();
-	XMStoreFloat3(&relativeDirection,XMVector3Transform(XMLoadFloat3(&relativeDirection), rotTarget.matWorldRot_));
+	XMStoreFloat3(&relativeDirection, XMVector3Transform(XMLoadFloat3(&relativeDirection), rotTarget.matWorldRot_));
 	return relativeDirection;
 }
 
@@ -28,26 +28,36 @@ void GameScene::Initialize() {
 	//ファイル名を指定してテクスチャを読み込む
 	textureHandle_ = TextureManager::Load("napnose.png");
 	textureHandle2_ = TextureManager::Load("laser.png");
-	
+
 	model_ = Model::Create();
 
 	std::random_device seed_gen;
 	std::mt19937_64 engine(seed_gen());
 	std::uniform_real_distribution<float> rotDist(0.0f, XM_2PI);
-	std::uniform_real_distribution<float> posDist(-10.0f,10.0f);
+	std::uniform_real_distribution<float> posDist(-10.0f, 10.0f);
 
 	for (size_t i = 0; i < _countof(worldTransform_); i++)
 	{
-		worldTransform_[i].translation_ = {-10 + float(int(i) / 10) * 2,-10,-10 + float(int(i) % 10) * 2 };
+		worldTransform_[i].translation_ = { -10 + float(int(i) / 10) * 2,-10,-10 + float(int(i) % 10) * 2 };
 		worldTransform_[i].rotation_ = { 0,0,0 };
 		worldTransform_[i].scale_ = { 1,1,1 };
 		worldTransform_[i].Initialize();
 	}
 
-	playerTransform_.translation_ = { 0,0,0 };
-	playerTransform_.rotation_ = { 0,0,0 };
-	playerTransform_.scale_ = { 1,1,2 };
-	playerTransform_.Initialize();
+	targetTransform_[0].translation_ = { 0,10,0 };
+	targetTransform_[0].rotation_ = { 0,0,0 };
+	targetTransform_[0].scale_ = { 1,1,1 };
+	targetTransform_[0].Initialize();
+
+	targetTransform_[1].translation_ = { -5,0,0 };
+	targetTransform_[1].rotation_ = { 0,0,0 };
+	targetTransform_[1].scale_ = { 1,1,1 };
+	targetTransform_[1].Initialize();
+
+	targetTransform_[2].translation_ = { 5,0,0 };
+	targetTransform_[2].rotation_ = { 0,0,0 };
+	targetTransform_[2].scale_ = { 1,1,1 };
+	targetTransform_[2].Initialize();
 
 	viewProjection_.eye = { 0,0,0 };
 	viewProjection_.target = { 0,0,1 };
@@ -57,57 +67,18 @@ void GameScene::Initialize() {
 
 void GameScene::Update() {
 
-	//視点移動
-	XMFLOAT3 move = { 0,0,0 };
-	XMFLOAT3 Front = getRelativeDirection(playerTransform_, { 0,0,1 });
-
-	const float kEyeSpeed = 0.2f;
-
-	if (input_->PushKey(DIK_UP))
+	if (input_->PushKey(DIK_SPACE) && !trig)
 	{
-		move = { Front.x * kEyeSpeed,Front.y * kEyeSpeed ,Front.z * kEyeSpeed };
+		targetNum++;
+		targetNum = targetNum % _countof(targetTransform_);
 	}
-	else if (input_->PushKey(DIK_DOWN))
-	{
-		move = { Front.x * -kEyeSpeed,Front.y * -kEyeSpeed ,Front.z * -kEyeSpeed };
-	}
+	trig = input_->PushKey(DIK_SPACE);
 
-	if (input_->PushKey(DIK_SPACE))
-	{
-	}
+	viewProjection_.eye = { 0,0,-30 };
 
-	playerTransform_.translation_.x += move.x;
-	playerTransform_.translation_.y += move.y;
-	playerTransform_.translation_.z += move.z;
+	viewProjection_.target = targetTransform_[targetNum].translation_;
 
-	//注視点移動
-	move = { 0,0,0 };
-
-	const float kTargetSpeed = 0.2f;
-
-	if (input_->PushKey(DIK_LEFT))
-	{
-		move.y -= 0.01f;
-	}
-	else if (input_->PushKey(DIK_RIGHT))
-	{
-		move.y += 0.01f;
-	}
-
-	playerTransform_.rotation_.x += move.x;
-	playerTransform_.rotation_.y += move.y;
-	playerTransform_.rotation_.z += move.z;
-
-	//カメラの視点と向きをcameraTransform_に合わせる
-	XMFLOAT3 camPosition = getRelativeDirection(playerTransform_, { 0,30,-30 });
-
-	viewProjection_.eye = { playerTransform_.translation_.x + camPosition.x
-		,playerTransform_.translation_.y + camPosition.y
-		,playerTransform_.translation_.z + camPosition.z };
-
-	viewProjection_.target = playerTransform_.translation_;
-
-	viewProjection_.up = getRelativeDirection(playerTransform_, { 0,1,0 });
+	viewProjection_.up = { 0,1,0 };
 
 	//行列の再計算
 	viewProjection_.UpdateMatrix();
@@ -143,8 +114,10 @@ void GameScene::Draw() {
 	{
 		model_->Draw(worldTransform_[i], viewProjection_, textureHandle_);
 	}
-
-	model_->Draw(playerTransform_, viewProjection_, textureHandle_);
+	for (size_t i = 0; i < _countof(targetTransform_); i++)
+	{
+		model_->Draw(targetTransform_[i], viewProjection_, textureHandle_);
+	}
 
 	// 3Dオブジェクト描画後処理
 	Model::PostDraw();
