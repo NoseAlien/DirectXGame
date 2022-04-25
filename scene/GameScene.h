@@ -53,12 +53,10 @@ class GameScene {
 	uint32_t textureHandle_ = 0;
 	uint32_t textureHandle2_ = 0;
 
-	WorldTransform billBoardTransform_;
-	WorldTransform billBoardParentTransform_;
-
 	WorldTransform worldTransform_[100];
 
-	WorldTransform cameraTransform_;
+	WorldTransform playerTransform_;
+
 	ViewProjection viewProjection_;
 
 	/// <summary>

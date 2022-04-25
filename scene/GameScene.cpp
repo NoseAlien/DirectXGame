@@ -44,21 +44,10 @@ void GameScene::Initialize() {
 		worldTransform_[i].Initialize();
 	}
 
-	billBoardParentTransform_.translation_ = { 0,0,0 };
-	billBoardParentTransform_.rotation_ = { 0,0,0 };
-	billBoardParentTransform_.scale_ = { 7,1,1 };
-	billBoardParentTransform_.Initialize();
-
-	billBoardTransform_.translation_ = { 0,0,0 };
-	billBoardTransform_.rotation_ = { 0,0,0 };
-	billBoardTransform_.scale_ = { 1,1,0.001f };
-	billBoardTransform_.parent_ = &billBoardParentTransform_;
-	billBoardTransform_.Initialize();
-
-	cameraTransform_.translation_ = { 0,0,-40 };
-	cameraTransform_.rotation_ = { 0,0,0 };
-	cameraTransform_.scale_ = { 1,1,1 };
-	cameraTransform_.Initialize();
+	playerTransform_.translation_ = { 0,0,0 };
+	playerTransform_.rotation_ = { 0,0,0 };
+	playerTransform_.scale_ = { 1,1,2 };
+	playerTransform_.Initialize();
 
 	viewProjection_.eye = { 0,0,0 };
 	viewProjection_.target = { 0,0,1 };
@@ -70,42 +59,26 @@ void GameScene::Update() {
 
 	//視点移動
 	XMFLOAT3 move = { 0,0,0 };
-	XMFLOAT3 cameraRight = getRelativeDirection(cameraTransform_, { 1,0,0 });
-	XMFLOAT3 cameraUp = getRelativeDirection(cameraTransform_, { 0,1,0 });
-	XMFLOAT3 cameraFront = getRelativeDirection(cameraTransform_, { 0,0,1 });
+	XMFLOAT3 Front = getRelativeDirection(playerTransform_, { 0,0,1 });
 
 	const float kEyeSpeed = 0.2f;
 
-	if (input_->PushKey(DIK_W))
+	if (input_->PushKey(DIK_UP))
 	{
-		move = { cameraFront.x * kEyeSpeed,cameraFront.y * kEyeSpeed ,cameraFront.z * kEyeSpeed };
+		move = { Front.x * kEyeSpeed,Front.y * kEyeSpeed ,Front.z * kEyeSpeed };
 	}
-	else if (input_->PushKey(DIK_S))
+	else if (input_->PushKey(DIK_DOWN))
 	{
-		move = { cameraFront.x * -kEyeSpeed,cameraFront.y * -kEyeSpeed ,cameraFront.z * -kEyeSpeed };
-	}
-
-	if (input_->PushKey(DIK_D))
-	{
-		move = { cameraRight.x * kEyeSpeed,cameraRight.y * kEyeSpeed ,cameraRight.z * kEyeSpeed };
-	}
-	else if (input_->PushKey(DIK_A))
-	{
-		move = { cameraRight.x * -kEyeSpeed,cameraRight.y * -kEyeSpeed ,cameraRight.z * -kEyeSpeed };
+		move = { Front.x * -kEyeSpeed,Front.y * -kEyeSpeed ,Front.z * -kEyeSpeed };
 	}
 
 	if (input_->PushKey(DIK_SPACE))
 	{
-		move = { cameraUp.x * kEyeSpeed,cameraUp.y * kEyeSpeed ,cameraUp.z * kEyeSpeed };
-	}
-	else if (input_->PushKey(DIK_LSHIFT))
-	{
-		move = { cameraUp.x * -kEyeSpeed,cameraUp.y * -kEyeSpeed ,cameraUp.z * -kEyeSpeed };
 	}
 
-	cameraTransform_.translation_.x += move.x;
-	cameraTransform_.translation_.y += move.y;
-	cameraTransform_.translation_.z += move.z;
+	playerTransform_.translation_.x += move.x;
+	playerTransform_.translation_.y += move.y;
+	playerTransform_.translation_.z += move.z;
 
 	//注視点移動
 	move = { 0,0,0 };
@@ -120,71 +93,20 @@ void GameScene::Update() {
 	{
 		move.y += 0.01f;
 	}
-	if (input_->PushKey(DIK_UP))
-	{
-		move.x -= 0.01f;
 
-	}
-	else if (input_->PushKey(DIK_DOWN))
-	{
-		move.x += 0.01f;
-
-	}
-	if (input_->PushKey(DIK_E))
-	{
-		move.z -= 0.01f;
-
-	}
-
-	cameraTransform_.rotation_.x += move.x;
-	cameraTransform_.rotation_.y += move.y;
-	cameraTransform_.rotation_.z += move.z;
+	playerTransform_.rotation_.x += move.x;
+	playerTransform_.rotation_.y += move.y;
+	playerTransform_.rotation_.z += move.z;
 
 	//カメラの視点と向きをcameraTransform_に合わせる
-	viewProjection_.eye = cameraTransform_.translation_;
+	viewProjection_.eye = { 0,10,-30 };
 
-	viewProjection_.target = {
-		cameraTransform_.translation_.x + getRelativeDirection(cameraTransform_,{0,0,1}).x
-		,cameraTransform_.translation_.y + getRelativeDirection(cameraTransform_,{0,0,1}).y
-		,cameraTransform_.translation_.z + getRelativeDirection(cameraTransform_,{0,0,1}).z };
+	viewProjection_.target = { 0,0,0 };
 
-	viewProjection_.up = getRelativeDirection(cameraTransform_, { 0,1,0 });
+	viewProjection_.up = { 0,1,0 };
 
 	//行列の再計算
 	viewProjection_.UpdateMatrix();
-
-	//ここからビルボード処理
-
-	billBoardTransform_.rotation_ = {
-		-cameraTransform_.rotation_.x
-		,cameraTransform_.rotation_.y + XM_PI
-		,-cameraTransform_.rotation_.z};
-
-	billBoardTransform_.UpdateMatrix();
-
-	//ここまでビルボード処理
-
-	//デバッグ表示
-	debugText_->SetPos(50, 50);
-	debugText_->Printf(
-		"eye:(%f,%f,%f)"
-		, viewProjection_.eye.x, viewProjection_.eye.y, viewProjection_.eye.z);
-	debugText_->SetPos(50, 70);
-	debugText_->Printf(
-		"target:(%f,%f,%f)"
-		, viewProjection_.target.x, viewProjection_.target.y, viewProjection_.target.z);
-	debugText_->SetPos(50, 90);
-	debugText_->Printf(
-		"up:(%f,%f,%f)"
-		, viewProjection_.up.x, viewProjection_.up.y, viewProjection_.up.z);
-	debugText_->SetPos(50, 110);
-	debugText_->Printf(
-		"camRot:(%f,%f,%f)"
-		, cameraTransform_.rotation_.x, cameraTransform_.rotation_.y, cameraTransform_.rotation_.z);
-	debugText_->SetPos(50, 130);
-	debugText_->Printf(
-		"billboardRot:(%f,%f,%f)"
-		, billBoardTransform_.rotation_.x, billBoardTransform_.rotation_.y, billBoardTransform_.rotation_.z);
 }
 
 void GameScene::Draw() {
@@ -218,7 +140,7 @@ void GameScene::Draw() {
 		model_->Draw(worldTransform_[i], viewProjection_, textureHandle_);
 	}
 
-	model_->Draw(billBoardTransform_, viewProjection_, textureHandle2_);
+	model_->Draw(playerTransform_, viewProjection_, textureHandle_);
 
 	// 3Dオブジェクト描画後処理
 	Model::PostDraw();
