@@ -2,13 +2,9 @@
 #include "TextureManager.h"
 #include <cassert>
 
-using namespace DirectX;
-
 GameScene::GameScene() {}
 
-GameScene::~GameScene() {
-	delete model_;
-}
+GameScene::~GameScene() {}
 
 void GameScene::Initialize() {
 
@@ -16,23 +12,9 @@ void GameScene::Initialize() {
 	input_ = Input::GetInstance();
 	audio_ = Audio::GetInstance();
 	debugText_ = DebugText::GetInstance();
-
-	//ファイル名を指定してテクスチャを読み込む
-	textureHandle_ = TextureManager::Load("napnose.png");
-	
-	model_ = Model::Create();
-
-	viewProjection_.Initialize();
-	worldTransform_.Initialize();
-
 }
 
-void GameScene::Update() {
-	worldTransform_.translation_ = { 10,10,10 };
-	worldTransform_.rotation_ = { XMConvertToRadians(45),XMConvertToRadians(45),0 };
-	worldTransform_.scale_ = { 5,5,5 };
-	worldTransform_.Initialize();
-}
+void GameScene::Update() {}
 
 void GameScene::Draw() {
 
@@ -60,7 +42,6 @@ void GameScene::Draw() {
 	/// <summary>
 	/// ここに3Dオブジェクトの描画処理を追加できる
 	/// </summary>
-	model_->Draw(worldTransform_, viewProjection_, textureHandle_);
 
 	// 3Dオブジェクト描画後処理
 	Model::PostDraw();
