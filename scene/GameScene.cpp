@@ -3,6 +3,7 @@
 #include <cassert>
 #include "AxisIndicator.h"
 #include "PrimitiveDrawer.h"
+#include <random>
 
 GameScene::GameScene() {}
 
@@ -18,85 +19,33 @@ void GameScene::Initialize() {
 	audio_ = Audio::GetInstance();
 	debugText_ = DebugText::GetInstance();
 
+	std::random_device seed_gen;
+	std::mt19937_64 engine(seed_gen());
+	std::uniform_real_distribution<float> dist(-10.0,10.0);
+
+	std::random_device seed_genRot;
+	std::mt19937_64 rotEngine(seed_genRot());
+	std::uniform_real_distribution<float> rotDist(0, MathUtility::PI);
+
 	//ファイル名を取得してテクスチャを読み込む
 	textureHandle_ = TextureManager::Load("napnose.png");
 
 	//3Dモデルの生成
 	model_ = Model::Create();
 
-	//ワールドトランスフォームの初期化
-	worldTransform_.Initialize();
+	for (WorldTransform& worldTransform : worldTransforms_)
+	{
+		//ワールドトランスフォームの初期化
+		worldTransform.Initialize();
+		worldTransform.scale_ = { 1,1,1 };
+		worldTransform.rotation_ = { rotDist(rotEngine),rotDist(rotEngine),rotDist(rotEngine) };
+		worldTransform.translation_ = { dist(engine),dist(engine),dist(engine) };
+		worldTransform.UpdateMatrix();
+	}
 
-	//////拡縮//////
-	//X,Y,Z方向のスケーリングを設定
-	worldTransform_.scale_ = { 1.5,1,0.5 };
-	//スケーリング倍率を行列に設定する
-	Matrix4 matScale =
-		{ worldTransform_.scale_.x,0,0,0,
-		0,worldTransform_.scale_.y,0,0,
-		0,0,worldTransform_.scale_.z,0,
-		0,0,0,1 };
-
-	//単位行列を代入
-	worldTransform_.matWorld_ = 
-		{ 1,0,0,0,
-		0,1,0,0,
-		0,0,1,0,
-		0,0,0,1 };
-
-	//////回転//////
-	//X,Y,Z軸周りの回転角を設定
-	worldTransform_.rotation_ = { 0,0,MathUtility::PI / 4 };
-	//Z軸回転行列を宣言
-	Matrix4 matRotZ = 
-		{ cos(worldTransform_.rotation_.z),sin(worldTransform_.rotation_.z),0,0,
-		-sin(worldTransform_.rotation_.z),cos(worldTransform_.rotation_.z),0,0,
-		0,0,1,0,
-		0,0,0,1 };
-	//X軸回転行列を宣言
-	Matrix4 matRotX =
-		{ 1,0,0,0,
-		0,cos(worldTransform_.rotation_.x),sin(worldTransform_.rotation_.x),0,
-		0,-sin(worldTransform_.rotation_.x),cos(worldTransform_.rotation_.x),0,
-		0,0,0,1 };
-	//Y軸回転行列を宣言
-	Matrix4 matRotY =
-		{ cos(worldTransform_.rotation_.y),0,-sin(worldTransform_.rotation_.y),0,
-		0,1,0,0,
-		sin(worldTransform_.rotation_.y),0,cos(worldTransform_.rotation_.y),0,
-		0,0,0,1 };
-
-	//合成用回転行列を宣言し、ZXYの順に合成
-	Matrix4 matRot = matRotZ;
-	matRot *= matRotX;
-	matRot *= matRotY;
-
-	//////平行移動//////
-	//X,Y,Z方向の平行移動を設定
-	worldTransform_.translation_ = { 0,10,0 };
-	//移動量を行列に設定する
-	Matrix4 matTrans = 
-		{ 1,0,0,0,
-		0,1,0,0,
-		0,0,1,0,
-		worldTransform_.translation_.x,worldTransform_.translation_.y,worldTransform_.translation_.z,1 };
-
-
-	//単位行列を代入
-	worldTransform_.matWorld_ =
-	{ 1,0,0,0,
-	0,1,0,0,
-	0,0,1,0,
-	0,0,0,1 };
-	//スケーリング行列を掛ける
-	worldTransform_.matWorld_ *= matScale;
-	//合成用回転行列を掛ける
-	worldTransform_.matWorld_ *= matRot;
-	//平行移動行列を掛ける
-	worldTransform_.matWorld_ *= matTrans;
-
-	//行列の転送
-	worldTransform_.TransferMatrix();
+	viewProjection_.eye = {0,0,-10};
+	viewProjection_.target = { 10,0,0 };
+	viewProjection_.up = { cosf(MathUtility::PI / 4),sinf(MathUtility::PI / 4),0};
 
 	//ビュープロジェクションの初期化
 	viewProjection_.Initialize();
@@ -107,7 +56,7 @@ void GameScene::Initialize() {
 	//軸方向の表示を有効にする
 	AxisIndicator::GetInstance()->SetVisible(true);
 	//軸方向表示が参照するビュープロジェクションを指定する（アドレス渡し）
-	AxisIndicator::GetInstance()->SetTargetViewProjection(&debugCamera_->GetViewProjection());
+	AxisIndicator::GetInstance()->SetTargetViewProjection(&viewProjection_);
 
 	//ライン描画が参照するビュープロジェクションを指定する（アドレス渡し）
 	PrimitiveDrawer::GetInstance()->SetViewProjection(&debugCamera_->GetViewProjection());
@@ -115,6 +64,50 @@ void GameScene::Initialize() {
 
 void GameScene::Update() {
 	debugCamera_->Update();
+
+	Vector3 move = { 0,0,0 };
+	const float kEyeSpeed = 0.2f;
+	if (input_->PushKey(DIK_W))
+	{
+		move.z += kEyeSpeed;
+	}
+	else if (input_->PushKey(DIK_S))
+	{
+		move.z -= kEyeSpeed;
+	}
+	viewProjection_.eye += move;
+
+	move = { 0,0,0 };
+	const float kTargetSpeed = 0.2f;
+	if (input_->PushKey(DIK_LEFT))
+	{
+		move.x += kTargetSpeed;
+	}
+	else if (input_->PushKey(DIK_RIGHT))
+	{
+		move.x -= kTargetSpeed;
+	}
+	viewProjection_.target += move;
+
+	const float kUpRotSpeed = 0.05f;
+	if (input_->PushKey(DIK_SPACE))
+	{
+		viewAngle += kUpRotSpeed;
+		viewAngle = fmodf(viewAngle, MathUtility::PI * 2.0f);
+	}
+	viewProjection_.up = { cosf(viewAngle),sinf(viewAngle),0 };
+
+	viewProjection_.UpdateMatrix();
+
+	debugText_->SetPos(50, 50);
+	debugText_->Printf(
+		"eye:(%f,%f,%f)", viewProjection_.eye.x, viewProjection_.eye.y, viewProjection_.eye.z);
+	debugText_->SetPos(50, 70);
+	debugText_->Printf(
+		"target:(%f,%f,%f)", viewProjection_.target.x, viewProjection_.target.y, viewProjection_.target.z);
+	debugText_->SetPos(50, 90);
+	debugText_->Printf(
+		"up:(%f,%f,%f)", viewProjection_.up.x, viewProjection_.up.y, viewProjection_.up.z);
 }
 
 void GameScene::Draw() {
@@ -144,7 +137,10 @@ void GameScene::Draw() {
 	/// ここに3Dオブジェクトの描画処理を追加できる
 	/// </summary>
 	//3Dモデル描画
-	model_->Draw(worldTransform_, debugCamera_->GetViewProjection(), textureHandle_);
+	for (WorldTransform& worldTransform : worldTransforms_)
+	{
+		model_->Draw(worldTransform, viewProjection_, textureHandle_);
+	}
 
 	//PrimitiveDrawer::GetInstance()->DrawLine3d(Vector3{ 10,0,0 }, Vector3{ -10,0,0 }, Vector4{ 255,0,0,255 });
 	//読み取りアクセス違反。this->line_._Mypair.**_Myval2** が nullptr でした。
