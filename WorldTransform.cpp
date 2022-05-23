@@ -58,6 +58,11 @@ void WorldTransform::UpdateMatrix()
 	//•½sˆÚ“®s—ñ‚ğŠ|‚¯‚é
 	matWorld_ *= matTrans;
 
+	if (parent_ != nullptr)
+	{
+		matWorld_ *= parent_->matWorld_;
+	}
+
 	//s—ñ‚Ì“]‘—
 	TransferMatrix();
 }

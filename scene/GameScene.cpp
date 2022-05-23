@@ -43,7 +43,7 @@ void GameScene::Initialize() {
 	//3Dモデルの生成
 	model_ = Model::Create();
 
-	for (WorldTransform& worldTransform : worldTransforms_)
+	/*for (WorldTransform& worldTransform : worldTransforms_)
 	{
 		//ワールドトランスフォームの初期化
 		worldTransform.Initialize();
@@ -51,17 +51,58 @@ void GameScene::Initialize() {
 		worldTransform.rotation_ = { rotDist(rotEngine),rotDist(rotEngine),rotDist(rotEngine) };
 		worldTransform.translation_ = { dist(engine),dist(engine),dist(engine) };
 		worldTransform.UpdateMatrix();
-	}
+	}*/
 
-	/*viewProjection_.eye = {0,0,-10};
-	viewProjection_.target = { 10,0,0 };
-	viewProjection_.up = { cosf(MathUtility::PI / 4),sinf(MathUtility::PI / 4),0};
-	*/
+	worldTransforms_[kRoot].Initialize();
 
-	viewProjection_.fovAngleY = DegreeToRad(10);
+	worldTransforms_[kSpine].Initialize();
+	worldTransforms_[kSpine].translation_ = { 0,4.5,0 };
+	worldTransforms_[kSpine].parent_ = &worldTransforms_[kRoot];
+	worldTransforms_[kSpine].UpdateMatrix();
+
+	worldTransforms_[kChest].Initialize();
+	worldTransforms_[kChest].translation_ = { 0,0,0 };
+	worldTransforms_[kChest].parent_ = &worldTransforms_[kSpine];
+	worldTransforms_[kChest].UpdateMatrix();
+
+	worldTransforms_[kHead].Initialize();
+	worldTransforms_[kHead].translation_ = { 0,4.5,0 };
+	worldTransforms_[kHead].parent_ = &worldTransforms_[kChest];
+	worldTransforms_[kHead].UpdateMatrix();
+
+	worldTransforms_[kArmL].Initialize();
+	worldTransforms_[kArmL].translation_ = { -4.5,0,0 };
+	worldTransforms_[kArmL].parent_ = &worldTransforms_[kChest];
+	worldTransforms_[kArmL].UpdateMatrix();
+
+	worldTransforms_[kArmR].Initialize();
+	worldTransforms_[kArmR].translation_ = { 4.5,0,0 };
+	worldTransforms_[kArmR].parent_ = &worldTransforms_[kChest];
+	worldTransforms_[kArmR].UpdateMatrix();
+
+	worldTransforms_[kHip].Initialize();
+	worldTransforms_[kHip].translation_ = { 0,-4.5,0 };
+	worldTransforms_[kHip].parent_ = &worldTransforms_[kSpine];
+	worldTransforms_[kHip].UpdateMatrix();
+
+	worldTransforms_[kLegL].Initialize();
+	worldTransforms_[kLegL].translation_ = { -4.5,-4.5,0 };
+	worldTransforms_[kLegL].parent_ = &worldTransforms_[kHip];
+	worldTransforms_[kLegL].UpdateMatrix();
+
+	worldTransforms_[kLegR].Initialize();
+	worldTransforms_[kLegR].translation_ = { 4.5,-4.5,0 };
+	worldTransforms_[kLegR].parent_ = &worldTransforms_[kHip];
+	worldTransforms_[kLegR].UpdateMatrix();
+
+	viewProjection_.eye = {0,0,-30};
+	viewProjection_.target = { 0,0,0 };
+	viewProjection_.up = {0,1,0};
+
+	/*viewProjection_.fovAngleY = DegreeToRad(10);
 	viewProjection_.aspectRatio = 1;
 	viewProjection_.nearZ = 52.0f;
-	viewProjection_.farZ = 53.0f;
+	viewProjection_.farZ = 53.0f;*/
 
 	//ビュープロジェクションの初期化
 	viewProjection_.Initialize();
@@ -145,11 +186,51 @@ void GameScene::Update() {
 		}*/
 	}
 
+	if (input_->PushKey(DIK_U))
+	{
+		worldTransforms_[kChest].rotation_.y += 0.01;
+	}
+	else if (input_->PushKey(DIK_I))
+	{
+		worldTransforms_[kChest].rotation_.y -= 0.01;
+
+	}
+
+	if (input_->PushKey(DIK_J))
+	{
+		worldTransforms_[kHip].rotation_.y += 0.01;
+	}
+	else if (input_->PushKey(DIK_K))
+	{
+		worldTransforms_[kHip].rotation_.y -= 0.01;
+
+	}
+
 	viewProjection_.UpdateMatrix();
+
+	Vector3 move = { 0,0,0 };
+	if (input_->PushKey(DIK_RIGHT))
+	{
+		move.x += 0.01f;
+	}
+	else if (input_->PushKey(DIK_LEFT))
+	{
+		move.x -= 0.01f;
+	}
+	worldTransforms_[0].translation_ += move;
+
+	for (int i = 0; i < kNumPartID; i++)
+	{
+		worldTransforms_[i].UpdateMatrix();
+	}
 
 	debugText_->SetPos(50, 110);
 	debugText_->Printf(
-		"fovAngle(Degree)%f", RadToDegree(viewProjection_.fovAngleY));
+		"root:(%f,%f,%f)", worldTransforms_[0].translation_.x, worldTransforms_[0].translation_.y, worldTransforms_[0].translation_.z);
+
+	/*debugText_->SetPos(50, 110);
+	debugText_->Printf(
+		"fovAngle(Degree)%f", RadToDegree(viewProjection_.fovAngleY));*/
 }
 
 void GameScene::Draw() {
@@ -179,9 +260,15 @@ void GameScene::Draw() {
 	/// ここに3Dオブジェクトの描画処理を追加できる
 	/// </summary>
 	//3Dモデル描画
-	for (WorldTransform& worldTransform : worldTransforms_)
+	/*for (WorldTransform& worldTransform : worldTransforms_)
 	{
 		model_->Draw(worldTransform, viewProjection_, textureHandle_);
+	}*/
+	model_->Draw(worldTransforms_[0], viewProjection_, textureHandle_);
+
+	for (int i = 0; i < kNumPartID; i++)
+	{
+		model_->Draw(worldTransforms_[i], viewProjection_, textureHandle_);
 	}
 
 	//PrimitiveDrawer::GetInstance()->DrawLine3d(Vector3{ 10,0,0 }, Vector3{ -10,0,0 }, Vector4{ 255,0,0,255 });
