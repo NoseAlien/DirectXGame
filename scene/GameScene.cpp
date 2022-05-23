@@ -5,6 +5,16 @@
 #include "PrimitiveDrawer.h"
 #include <random>
 
+double DegreeToRad(double num)
+{
+	return num / 180 * MathUtility::PI;
+}
+
+double RadToDegree(double num)
+{
+	return num / MathUtility::PI * 180;
+}
+
 GameScene::GameScene() {}
 
 GameScene::~GameScene() {
@@ -43,9 +53,15 @@ void GameScene::Initialize() {
 		worldTransform.UpdateMatrix();
 	}
 
-	viewProjection_.eye = {0,0,-10};
+	/*viewProjection_.eye = {0,0,-10};
 	viewProjection_.target = { 10,0,0 };
 	viewProjection_.up = { cosf(MathUtility::PI / 4),sinf(MathUtility::PI / 4),0};
+	*/
+
+	viewProjection_.fovAngleY = DegreeToRad(10);
+	viewProjection_.aspectRatio = 1;
+	viewProjection_.nearZ = 52.0f;
+	viewProjection_.farZ = 53.0f;
 
 	//ビュープロジェクションの初期化
 	viewProjection_.Initialize();
@@ -63,7 +79,7 @@ void GameScene::Initialize() {
 }
 
 void GameScene::Update() {
-	debugCamera_->Update();
+	/*debugCamera_->Update();
 
 	Vector3 move = { 0,0,0 };
 	const float kEyeSpeed = 0.2f;
@@ -108,6 +124,32 @@ void GameScene::Update() {
 	debugText_->SetPos(50, 90);
 	debugText_->Printf(
 		"up:(%f,%f,%f)", viewProjection_.up.x, viewProjection_.up.y, viewProjection_.up.z);
+		*/
+
+	if (input_->PushKey(DIK_UP))
+	{
+		viewProjection_.nearZ += 0.01;
+		/*viewProjection_.fovAngleY += 0.01;
+		if (viewProjection_.fovAngleY > MathUtility::PI)
+		{
+			viewProjection_.fovAngleY = MathUtility::PI;
+		}*/
+	}
+	else if (input_->PushKey(DIK_DOWN))
+	{
+		viewProjection_.nearZ -= 0.01;
+		/*viewProjection_.fovAngleY -= 0.01;
+		if (viewProjection_.fovAngleY < 0)
+		{
+			viewProjection_.fovAngleY = 0;
+		}*/
+	}
+
+	viewProjection_.UpdateMatrix();
+
+	debugText_->SetPos(50, 110);
+	debugText_->Printf(
+		"fovAngle(Degree)%f", RadToDegree(viewProjection_.fovAngleY));
 }
 
 void GameScene::Draw() {
