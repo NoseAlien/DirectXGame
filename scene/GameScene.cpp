@@ -20,6 +20,7 @@ GameScene::GameScene() {}
 GameScene::~GameScene() {
 	delete model_;
 	delete debugCamera_;
+	delete player_;
 }
 
 void GameScene::Initialize() {
@@ -43,58 +44,6 @@ void GameScene::Initialize() {
 	//3Dモデルの生成
 	model_ = Model::Create();
 
-	/*for (WorldTransform& worldTransform : worldTransforms_)
-	{
-		//ワールドトランスフォームの初期化
-		worldTransform.Initialize();
-		worldTransform.scale_ = { 1,1,1 };
-		worldTransform.rotation_ = { rotDist(rotEngine),rotDist(rotEngine),rotDist(rotEngine) };
-		worldTransform.translation_ = { dist(engine),dist(engine),dist(engine) };
-		worldTransform.UpdateMatrix();
-	}*/
-
-	worldTransforms_[kRoot].Initialize();
-
-	worldTransforms_[kSpine].Initialize();
-	worldTransforms_[kSpine].translation_ = { 0,4.5,0 };
-	worldTransforms_[kSpine].parent_ = &worldTransforms_[kRoot];
-	worldTransforms_[kSpine].UpdateMatrix();
-
-	worldTransforms_[kChest].Initialize();
-	worldTransforms_[kChest].translation_ = { 0,0,0 };
-	worldTransforms_[kChest].parent_ = &worldTransforms_[kSpine];
-	worldTransforms_[kChest].UpdateMatrix();
-
-	worldTransforms_[kHead].Initialize();
-	worldTransforms_[kHead].translation_ = { 0,4.5,0 };
-	worldTransforms_[kHead].parent_ = &worldTransforms_[kChest];
-	worldTransforms_[kHead].UpdateMatrix();
-
-	worldTransforms_[kArmL].Initialize();
-	worldTransforms_[kArmL].translation_ = { -4.5,0,0 };
-	worldTransforms_[kArmL].parent_ = &worldTransforms_[kChest];
-	worldTransforms_[kArmL].UpdateMatrix();
-
-	worldTransforms_[kArmR].Initialize();
-	worldTransforms_[kArmR].translation_ = { 4.5,0,0 };
-	worldTransforms_[kArmR].parent_ = &worldTransforms_[kChest];
-	worldTransforms_[kArmR].UpdateMatrix();
-
-	worldTransforms_[kHip].Initialize();
-	worldTransforms_[kHip].translation_ = { 0,-4.5,0 };
-	worldTransforms_[kHip].parent_ = &worldTransforms_[kSpine];
-	worldTransforms_[kHip].UpdateMatrix();
-
-	worldTransforms_[kLegL].Initialize();
-	worldTransforms_[kLegL].translation_ = { -4.5,-4.5,0 };
-	worldTransforms_[kLegL].parent_ = &worldTransforms_[kHip];
-	worldTransforms_[kLegL].UpdateMatrix();
-
-	worldTransforms_[kLegR].Initialize();
-	worldTransforms_[kLegR].translation_ = { 4.5,-4.5,0 };
-	worldTransforms_[kLegR].parent_ = &worldTransforms_[kHip];
-	worldTransforms_[kLegR].UpdateMatrix();
-
 	viewProjection_.eye = {0,0,-30};
 	viewProjection_.target = { 0,0,0 };
 	viewProjection_.up = {0,1,0};
@@ -117,120 +66,30 @@ void GameScene::Initialize() {
 
 	//ライン描画が参照するビュープロジェクションを指定する（アドレス渡し）
 	PrimitiveDrawer::GetInstance()->SetViewProjection(&debugCamera_->GetViewProjection());
+
+	//自キャラの生成
+	player_ = new Player();
+	//自キャラの初期化
+	player_->Initialize(model_, textureHandle_);
 }
 
 void GameScene::Update() {
-	/*debugCamera_->Update();
+#ifdef _DEBUG
+	if (input_->TriggerKey(DIK_P))
+	{
+		isDebugCameraActive_ = !isDebugCameraActive_;
+	}
+#endif
 
-	Vector3 move = { 0,0,0 };
-	const float kEyeSpeed = 0.2f;
-	if (input_->PushKey(DIK_W))
+	if (isDebugCameraActive_)
 	{
-		move.z += kEyeSpeed;
+		debugCamera_->Update();
+		viewProjection_.matView = debugCamera_->GetViewProjection().matView;
+		viewProjection_.matProjection = debugCamera_->GetViewProjection().matProjection;
 	}
-	else if (input_->PushKey(DIK_S))
-	{
-		move.z -= kEyeSpeed;
-	}
-	viewProjection_.eye += move;
-
-	move = { 0,0,0 };
-	const float kTargetSpeed = 0.2f;
-	if (input_->PushKey(DIK_LEFT))
-	{
-		move.x += kTargetSpeed;
-	}
-	else if (input_->PushKey(DIK_RIGHT))
-	{
-		move.x -= kTargetSpeed;
-	}
-	viewProjection_.target += move;
-
-	const float kUpRotSpeed = 0.05f;
-	if (input_->PushKey(DIK_SPACE))
-	{
-		viewAngle += kUpRotSpeed;
-		viewAngle = fmodf(viewAngle, MathUtility::PI * 2.0f);
-	}
-	viewProjection_.up = { cosf(viewAngle),sinf(viewAngle),0 };
-
 	viewProjection_.UpdateMatrix();
 
-	debugText_->SetPos(50, 50);
-	debugText_->Printf(
-		"eye:(%f,%f,%f)", viewProjection_.eye.x, viewProjection_.eye.y, viewProjection_.eye.z);
-	debugText_->SetPos(50, 70);
-	debugText_->Printf(
-		"target:(%f,%f,%f)", viewProjection_.target.x, viewProjection_.target.y, viewProjection_.target.z);
-	debugText_->SetPos(50, 90);
-	debugText_->Printf(
-		"up:(%f,%f,%f)", viewProjection_.up.x, viewProjection_.up.y, viewProjection_.up.z);
-		*/
-
-	if (input_->PushKey(DIK_UP))
-	{
-		viewProjection_.nearZ += 0.01;
-		/*viewProjection_.fovAngleY += 0.01;
-		if (viewProjection_.fovAngleY > MathUtility::PI)
-		{
-			viewProjection_.fovAngleY = MathUtility::PI;
-		}*/
-	}
-	else if (input_->PushKey(DIK_DOWN))
-	{
-		viewProjection_.nearZ -= 0.01;
-		/*viewProjection_.fovAngleY -= 0.01;
-		if (viewProjection_.fovAngleY < 0)
-		{
-			viewProjection_.fovAngleY = 0;
-		}*/
-	}
-
-	if (input_->PushKey(DIK_U))
-	{
-		worldTransforms_[kChest].rotation_.y += 0.01;
-	}
-	else if (input_->PushKey(DIK_I))
-	{
-		worldTransforms_[kChest].rotation_.y -= 0.01;
-
-	}
-
-	if (input_->PushKey(DIK_J))
-	{
-		worldTransforms_[kHip].rotation_.y += 0.01;
-	}
-	else if (input_->PushKey(DIK_K))
-	{
-		worldTransforms_[kHip].rotation_.y -= 0.01;
-
-	}
-
-	viewProjection_.UpdateMatrix();
-
-	Vector3 move = { 0,0,0 };
-	if (input_->PushKey(DIK_RIGHT))
-	{
-		move.x += 0.01f;
-	}
-	else if (input_->PushKey(DIK_LEFT))
-	{
-		move.x -= 0.01f;
-	}
-	worldTransforms_[0].translation_ += move;
-
-	for (int i = 0; i < kNumPartID; i++)
-	{
-		worldTransforms_[i].UpdateMatrix();
-	}
-
-	debugText_->SetPos(50, 110);
-	debugText_->Printf(
-		"root:(%f,%f,%f)", worldTransforms_[0].translation_.x, worldTransforms_[0].translation_.y, worldTransforms_[0].translation_.z);
-
-	/*debugText_->SetPos(50, 110);
-	debugText_->Printf(
-		"fovAngle(Degree)%f", RadToDegree(viewProjection_.fovAngleY));*/
+	player_->Update();
 }
 
 void GameScene::Draw() {
@@ -260,19 +119,7 @@ void GameScene::Draw() {
 	/// ここに3Dオブジェクトの描画処理を追加できる
 	/// </summary>
 	//3Dモデル描画
-	/*for (WorldTransform& worldTransform : worldTransforms_)
-	{
-		model_->Draw(worldTransform, viewProjection_, textureHandle_);
-	}*/
-	model_->Draw(worldTransforms_[0], viewProjection_, textureHandle_);
-
-	for (int i = 0; i < kNumPartID; i++)
-	{
-		model_->Draw(worldTransforms_[i], viewProjection_, textureHandle_);
-	}
-
-	//PrimitiveDrawer::GetInstance()->DrawLine3d(Vector3{ 10,0,0 }, Vector3{ -10,0,0 }, Vector4{ 255,0,0,255 });
-	//読み取りアクセス違反。this->line_._Mypair.**_Myval2** が nullptr でした。
+	player_->Draw(viewProjection_);
 
 	// 3Dオブジェクト描画後処理
 	Model::PostDraw();
