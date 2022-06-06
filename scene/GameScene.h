@@ -86,6 +86,8 @@ class GameScene {
 	//デバッグカメラ有効
 	bool isDebugCameraActive_ = false;
 
+	WorldTransform worldTransforms_[18];
+
 	//自キャラ
 	Player* player_ = nullptr;
 };

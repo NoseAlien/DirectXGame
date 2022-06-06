@@ -20,7 +20,7 @@ GameScene::GameScene() {}
 GameScene::~GameScene() {
 	delete model_;
 	delete debugCamera_;
-	delete player_;
+	//delete player_;
 }
 
 void GameScene::Initialize() {
@@ -71,6 +71,21 @@ void GameScene::Initialize() {
 	player_ = new Player();
 	//自キャラの初期化
 	player_->Initialize(model_, textureHandle_);
+
+	for (int i = 0; i < 9; i++)
+	{
+		worldTransforms_[i].Initialize();
+		worldTransforms_[i].translation_ = { ((float)i - 4) * 6,10,0 };
+		worldTransforms_[i].scale_ = { 3,3,3 };
+		worldTransforms_[i].UpdateMatrix();
+	}
+	for (int i = 9; i < 18; i++)
+	{
+		worldTransforms_[i].Initialize();
+		worldTransforms_[i].translation_ = { ((float)i - 13) * 6,-10,0 };
+		worldTransforms_[i].scale_ = { 3,3,3 };
+		worldTransforms_[i].UpdateMatrix();
+	}
 }
 
 void GameScene::Update() {
@@ -120,6 +135,10 @@ void GameScene::Draw() {
 	/// </summary>
 	//3Dモデル描画
 	player_->Draw(viewProjection_);
+	for (int i = 0; i < sizeof(worldTransforms_) / sizeof(worldTransforms_[0]); i++)
+	{
+		model_->Draw(worldTransforms_[i], viewProjection_, textureHandle_);
+	}
 
 	// 3Dオブジェクト描画後処理
 	Model::PostDraw();
