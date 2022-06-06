@@ -58,9 +58,17 @@ void WorldTransform::UpdateMatrix()
 	//平行移動行列を掛ける
 	matWorld_ *= matTrans;
 
+	matWorldRot_ =
+	{ 1,0,0,0,
+	0,1,0,0,
+	0,0,1,0,
+	0,0,0,1 }; // 【改造箇所】ワールド回転行列の変形もリセット
+	matWorldRot_ *= matRot;        // 【改造箇所】ワールド回転行列に回転を反映
+
 	if (parent_ != nullptr)
 	{
 		matWorld_ *= parent_->matWorld_;
+		matWorldRot_ *= parent_->matWorldRot_;//【改造箇所】親行列にも回転情報を掛け算する
 	}
 
 	//行列の転送

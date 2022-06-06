@@ -25,6 +25,8 @@ public:
 	///•`‰æ
 	///</summary>
 	void Draw(ViewProjection viewProjection);
+
+	WorldTransform GetWorldTransform();
 private:
 	WorldTransform worldTransform_;
 	Model* model_ = nullptr;

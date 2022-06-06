@@ -15,12 +15,34 @@ double RadToDegree(double num)
 	return num / MathUtility::PI * 180;
 }
 
+float VectorScale(Vector3 v)
+{
+	return sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+}
+
+Vector3 cross(Vector3 v, Vector3 v2)
+{
+	return Vector3(v.y * v2.z - v.z * v2.y, v.z * v2.x - v.x * v2.z, v.x * v2.y - v.y * v2.x);
+}
+
+Vector3 getRelativeDirection(WorldTransform rotTarget, Vector3 relativeDirection)
+{
+	rotTarget.UpdateMatrix();
+	Matrix4 matWorldRot = rotTarget.matWorldRot_;
+	relativeDirection = {
+		-relativeDirection.x * matWorldRot.m[0][0] - relativeDirection.y * matWorldRot.m[0][1] - relativeDirection.z * matWorldRot.m[0][2],
+		relativeDirection.x * matWorldRot.m[1][0] + relativeDirection.y * matWorldRot.m[1][1] + relativeDirection.z * matWorldRot.m[1][2],
+		relativeDirection.x * matWorldRot.m[2][0] + relativeDirection.y * matWorldRot.m[2][1] + relativeDirection.z * matWorldRot.m[2][2]
+	};
+	return relativeDirection;
+}
+
 GameScene::GameScene() {}
 
 GameScene::~GameScene() {
 	delete model_;
 	delete debugCamera_;
-	//delete player_;
+	delete player_;
 }
 
 void GameScene::Initialize() {
@@ -86,6 +108,12 @@ void GameScene::Initialize() {
 		worldTransforms_[i].scale_ = { 3,3,3 };
 		worldTransforms_[i].UpdateMatrix();
 	}
+
+	playable_ = new WorldTransform();
+
+	playable_->translation_ = { 0,0,0 };
+	playable_->scale_ = { 1,1,2 };
+	playable_->Initialize();
 }
 
 void GameScene::Update() {
@@ -102,9 +130,92 @@ void GameScene::Update() {
 		viewProjection_.matView = debugCamera_->GetViewProjection().matView;
 		viewProjection_.matProjection = debugCamera_->GetViewProjection().matProjection;
 	}
+
+	if (input_->PushKey(DIK_RIGHT))
+	{
+		viewAngleY += 0.01;
+	}
+	if (input_->PushKey(DIK_LEFT))
+	{
+		viewAngleY -= 0.01;
+	}
+
+	viewProjection_.target = viewProjection_.eye;
+	viewProjection_.target += { sinf(viewAngleY), 0, cosf(viewAngleY) };
+
 	viewProjection_.UpdateMatrix();
 
-	player_->Update();
+	//player_->Update();
+
+	if (input_->TriggerKey(DIK_Q))
+	{
+		viewMovement = !viewMovement;
+	}
+
+	Vector3 frontVec = { 0,0,0 };
+	Vector3 rightVec = { 0,0,0 };
+
+	if (viewMovement)
+	{
+		frontVec = viewProjection_.target;
+		frontVec -= viewProjection_.eye;
+		frontVec /= VectorScale(frontVec);
+
+		rightVec = cross(viewProjection_.up, frontVec);
+		rightVec /= VectorScale(rightVec);
+
+		debugText_->SetPos(50, 110);
+		debugText_->Printf(
+			"ViewMove");
+	}
+	else
+	{
+		frontVec = getRelativeDirection(*playable_, { 0,0,1 });
+
+		debugText_->SetPos(50, 110);
+		debugText_->Printf(
+			"RelativeMove");
+	}
+
+	Vector3 move = { 0,0,0 };
+
+	if (input_->PushKey(DIK_W))
+	{
+		move += frontVec;
+	}
+	if (input_->PushKey(DIK_S))
+	{
+		move -= frontVec;
+	}
+
+	if (viewMovement)
+	{
+		if (input_->PushKey(DIK_D))
+		{
+			move += rightVec;
+		}
+		if (input_->PushKey(DIK_A))
+		{
+			move -= rightVec;
+		}
+	}
+	else
+	{
+		if (input_->PushKey(DIK_D))
+		{
+			playable_->rotation_.y += 0.01;
+		}
+		if (input_->PushKey(DIK_A))
+		{
+			playable_->rotation_.y -= 0.01;
+		}
+	}
+
+	move *= 0.05f;
+
+	playable_->translation_ += move;
+
+	playable_->UpdateMatrix();
 }
 
 void GameScene::Draw() {
@@ -134,7 +245,11 @@ void GameScene::Draw() {
 	/// ここに3Dオブジェクトの描画処理を追加できる
 	/// </summary>
 	//3Dモデル描画
-	player_->Draw(viewProjection_);
+	
+	//player_->Draw(viewProjection_);
+
+	model_->Draw(*playable_, viewProjection_, textureHandle_);
+
 	for (int i = 0; i < sizeof(worldTransforms_) / sizeof(worldTransforms_[0]); i++)
 	{
 		model_->Draw(worldTransforms_[i], viewProjection_, textureHandle_);

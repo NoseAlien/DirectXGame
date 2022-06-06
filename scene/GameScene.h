@@ -78,7 +78,10 @@ class GameScene {
 	//ビュープロジェクション
 	ViewProjection viewProjection_;
 	//カメラ上方向の角度
-	float viewAngle = 0.0f;
+	float viewAngleUp = 0.0f;
+
+	//カメラのY軸回転角
+	float viewAngleY = 0.0f;
 
 	//デバッグカメラ
 	DebugCamera* debugCamera_ = nullptr;
@@ -86,7 +89,11 @@ class GameScene {
 	//デバッグカメラ有効
 	bool isDebugCameraActive_ = false;
 
+	bool viewMovement = true;
+
 	WorldTransform worldTransforms_[18];
+
+	WorldTransform* playable_ = nullptr;
 
 	//自キャラ
 	Player* player_ = nullptr;
