@@ -66,7 +66,7 @@ void GameScene::Initialize() {
 	//3Dモデルの生成
 	model_ = Model::Create();
 
-	viewProjection_.eye = {0,0,-30};
+	viewProjection_.eye = {0,0,-40};
 	viewProjection_.target = { 0,0,0 };
 	viewProjection_.up = {0,1,0};
 
@@ -96,17 +96,13 @@ void GameScene::Initialize() {
 
 	for (int i = 0; i < 9; i++)
 	{
-		worldTransforms_[i].Initialize();
-		worldTransforms_[i].translation_ = { ((float)i - 4) * 6,10,0 };
-		worldTransforms_[i].scale_ = { 3,3,3 };
-		worldTransforms_[i].UpdateMatrix();
-	}
-	for (int i = 9; i < 18; i++)
-	{
-		worldTransforms_[i].Initialize();
-		worldTransforms_[i].translation_ = { ((float)i - 13) * 6,-10,0 };
-		worldTransforms_[i].scale_ = { 3,3,3 };
-		worldTransforms_[i].UpdateMatrix();
+		for (int j = 0; j < 9; j++)
+		{
+			worldTransforms_[i][j].Initialize();
+			worldTransforms_[i][j].translation_ = { ((float)i - 4) * 3,((float)j - 4) * 3,0 };
+			worldTransforms_[i][j].scale_ = { 1,1,1 };
+			worldTransforms_[i][j].UpdateMatrix();
+		}
 	}
 
 	playable_ = new WorldTransform();
@@ -146,76 +142,6 @@ void GameScene::Update() {
 	viewProjection_.UpdateMatrix();
 
 	//player_->Update();
-
-	if (input_->TriggerKey(DIK_Q))
-	{
-		viewMovement = !viewMovement;
-	}
-
-	Vector3 frontVec = { 0,0,0 };
-	Vector3 rightVec = { 0,0,0 };
-
-	if (viewMovement)
-	{
-		frontVec = viewProjection_.target;
-		frontVec -= viewProjection_.eye;
-		frontVec /= VectorScale(frontVec);
-
-		rightVec = cross(viewProjection_.up, frontVec);
-		rightVec /= VectorScale(rightVec);
-
-		debugText_->SetPos(50, 110);
-		debugText_->Printf(
-			"ViewMove");
-	}
-	else
-	{
-		frontVec = getRelativeDirection(*playable_, { 0,0,1 });
-
-		debugText_->SetPos(50, 110);
-		debugText_->Printf(
-			"RelativeMove");
-	}
-
-	Vector3 move = { 0,0,0 };
-
-	if (input_->PushKey(DIK_W))
-	{
-		move += frontVec;
-	}
-	if (input_->PushKey(DIK_S))
-	{
-		move -= frontVec;
-	}
-
-	if (viewMovement)
-	{
-		if (input_->PushKey(DIK_D))
-		{
-			move += rightVec;
-		}
-		if (input_->PushKey(DIK_A))
-		{
-			move -= rightVec;
-		}
-	}
-	else
-	{
-		if (input_->PushKey(DIK_D))
-		{
-			playable_->rotation_.y += 0.01;
-		}
-		if (input_->PushKey(DIK_A))
-		{
-			playable_->rotation_.y -= 0.01;
-		}
-	}
-
-	move *= 0.05f;
-
-	playable_->translation_ += move;
-
-	playable_->UpdateMatrix();
 }
 
 void GameScene::Draw() {
@@ -248,11 +174,15 @@ void GameScene::Draw() {
 	
 	//player_->Draw(viewProjection_);
 
-	model_->Draw(*playable_, viewProjection_, textureHandle_);
-
 	for (int i = 0; i < sizeof(worldTransforms_) / sizeof(worldTransforms_[0]); i++)
 	{
-		model_->Draw(worldTransforms_[i], viewProjection_, textureHandle_);
+		for (int j = 0; j < sizeof(worldTransforms_[0]) / sizeof(worldTransforms_[0][0]); j++)
+		{
+			if ((float)i / 2 == i / 2 || (float)j / 2 == j / 2)
+			{
+				model_->Draw(worldTransforms_[i][j], viewProjection_, textureHandle_);
+			}
+		}
 	}
 
 	// 3Dオブジェクト描画後処理
