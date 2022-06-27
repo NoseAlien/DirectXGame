@@ -70,7 +70,7 @@ void GameScene::Initialize() {
 	for (int i = 0; i < sizeof(viewProjection_) / sizeof(viewProjection_[0]); i++)
 	{
 		float camOrbPos = dist(engine);
-		viewProjection_[i].eye = {sin(camOrbPos) * 20,0,cos(camOrbPos) * 20};
+		viewProjection_[i].eye = {sin(camOrbPos) * 20,10,cos(camOrbPos) * 20};
 		viewProjection_[i].target = { 0,0,0 };
 		viewProjection_[i].up = { 0,1,0 };
 		viewProjection_[i].Initialize();
