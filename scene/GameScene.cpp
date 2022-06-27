@@ -66,7 +66,7 @@ void GameScene::Initialize() {
 	//3Dモデルの生成
 	model_ = Model::Create();
 
-	viewProjection_.eye = {0,0,-50};
+	viewProjection_.eye = {0,0,-40};
 	viewProjection_.target = { 0,0,0 };
 	viewProjection_.up = {0,1,0};
 
@@ -90,22 +90,17 @@ void GameScene::Initialize() {
 	PrimitiveDrawer::GetInstance()->SetViewProjection(&debugCamera_->GetViewProjection());
 
 	//自キャラの生成
-	player_ = new Player();
+	//player_ = new Player();
 	//自キャラの初期化
-	player_->Initialize(model_, textureHandle_);
+	//player_->Initialize(model_, textureHandle_);
 
-	for (int i = 0; i < 9; i++)
+	for (int i = 0; i < sizeof(worldTransforms_) / sizeof(worldTransforms_[0]); i++)
 	{
-		for (int j = 0; j < 9; j++)
-		{
-			for (int k = 0; k < 9; k++)
-			{
-				worldTransforms_[i][j][k].Initialize();
-				worldTransforms_[i][j][k].translation_ = { ((float)i - 4) * 3,((float)j - 4) * 3,((float)k - 4) * 3 };
-				worldTransforms_[i][j][k].scale_ = { 1,1,1 };
-				worldTransforms_[i][j][k].UpdateMatrix();
-			}
-		}
+		worldTransforms_[i].Initialize();
+		worldTransforms_[i].translation_ = { 0,0,0 };
+		worldTransforms_[i].rotation_ = { 0,0,0 };
+		worldTransforms_[i].scale_ = { 1,1,1 };
+		worldTransforms_[i].UpdateMatrix();
 	}
 
 	playable_ = new WorldTransform();
@@ -130,17 +125,14 @@ void GameScene::Update() {
 		viewProjection_.matProjection = debugCamera_->GetViewProjection().matProjection;
 	}
 
-	if (input_->PushKey(DIK_RIGHT))
-	{
-		viewAngleY += 0.01;
-	}
-	if (input_->PushKey(DIK_LEFT))
-	{
-		viewAngleY -= 0.01;
-	}
+	int objectNum = sizeof(worldTransforms_) / sizeof(worldTransforms_[0]);
 
-	viewProjection_.target = viewProjection_.eye;
-	viewProjection_.target += { sinf(viewAngleY), 0, cosf(viewAngleY) };
+	turnTime += 0.01f;
+	for (int i = 0; i < objectNum; i++)
+	{
+		worldTransforms_[i].translation_ = { sin(turnTime + MathUtility::PI * 2 / objectNum * i) * 6,cos(turnTime + MathUtility::PI * 2 / objectNum * i) * 6,0};
+		worldTransforms_[i].UpdateMatrix();
+	}
 
 	viewProjection_.UpdateMatrix();
 
@@ -179,13 +171,7 @@ void GameScene::Draw() {
 
 	for (int i = 0; i < sizeof(worldTransforms_) / sizeof(worldTransforms_[0]); i++)
 	{
-		for (int j = 0; j < sizeof(worldTransforms_[0]) / sizeof(worldTransforms_[0][0]); j++)
-		{
-			for (int k = 0; k < sizeof(worldTransforms_[0][0]) / sizeof(worldTransforms_[0][0][0]); k++)
-			{
-				model_->Draw(worldTransforms_[i][j][k], viewProjection_, textureHandle_);
-			}
-		}
+		model_->Draw(worldTransforms_[i], viewProjection_, textureHandle_);
 	}
 
 	// 3Dオブジェクト描画後処理

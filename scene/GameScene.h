@@ -83,6 +83,8 @@ class GameScene {
 	//カメラのY軸回転角
 	float viewAngleY = 0.0f;
 
+	float turnTime = 0.0f;
+
 	//デバッグカメラ
 	DebugCamera* debugCamera_ = nullptr;
 
@@ -91,7 +93,7 @@ class GameScene {
 
 	bool viewMovement = true;
 
-	WorldTransform worldTransforms_[9][9][9];
+	WorldTransform worldTransforms_[10];
 
 	WorldTransform* playable_ = nullptr;
 
