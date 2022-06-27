@@ -94,14 +94,11 @@ void GameScene::Initialize() {
 	//自キャラの初期化
 	//player_->Initialize(model_, textureHandle_);
 
-	for (int i = 0; i < sizeof(worldTransforms_) / sizeof(worldTransforms_[0]); i++)
-	{
-		worldTransforms_[i].Initialize();
-		worldTransforms_[i].translation_ = { 0,0,0 };
-		worldTransforms_[i].rotation_ = { 0,0,0 };
-		worldTransforms_[i].scale_ = { 1,1,1 };
-		worldTransforms_[i].UpdateMatrix();
-	}
+	worldTransform_.Initialize();
+	worldTransform_.translation_ = { 0,0,0 };
+	worldTransform_.rotation_ = { 0,0,0 };
+	worldTransform_.scale_ = { 1,1,1 };
+	worldTransform_.UpdateMatrix();
 
 	playable_ = new WorldTransform();
 
@@ -125,14 +122,98 @@ void GameScene::Update() {
 		viewProjection_.matProjection = debugCamera_->GetViewProjection().matProjection;
 	}
 
-	int objectNum = sizeof(worldTransforms_) / sizeof(worldTransforms_[0]);
+	Vector3 move = { 0,0,0 };
+	Vector3 rot = { 0,0,0 };
+	Vector3 sca = { 0,0,0 };
 
-	turnTime += 0.01f;
-	for (int i = 0; i < objectNum; i++)
+	if (input_->PushKey(DIK_D))
 	{
-		worldTransforms_[i].translation_ = { sin(turnTime + MathUtility::PI * 2 / objectNum * i) * 6,cos(turnTime + MathUtility::PI * 2 / objectNum * i) * 6,0};
-		worldTransforms_[i].UpdateMatrix();
+		move.x += 0.1;
 	}
+	if (input_->PushKey(DIK_A))
+	{
+		move.x -= 0.1;
+	}
+
+	if (input_->PushKey(DIK_W))
+	{
+		move.z += 0.1;
+	}
+	if (input_->PushKey(DIK_S))
+	{
+		move.z -= 0.1;
+	}
+
+	if (input_->PushKey(DIK_Q))
+	{
+		move.y += 0.1;
+	}
+	if (input_->PushKey(DIK_E))
+	{
+		move.y -= 0.1;
+	}
+
+	worldTransform_.translation_ += move;
+
+	if (input_->PushKey(DIK_Z))
+	{
+		rot.x += 0.01;
+	}
+	if (input_->PushKey(DIK_X))
+	{
+		rot.x -= 0.01;
+	}
+
+	if (input_->PushKey(DIK_C))
+	{
+		rot.y += 0.01;
+	}
+	if (input_->PushKey(DIK_V))
+	{
+		rot.y -= 0.01;
+	}
+
+	if (input_->PushKey(DIK_B))
+	{
+		rot.z += 0.01;
+	}
+	if (input_->PushKey(DIK_N))
+	{
+		rot.z -= 0.01;
+	}
+
+	worldTransform_.rotation_ += rot;
+
+	if (input_->PushKey(DIK_RIGHT))
+	{
+		sca.x += 0.1;
+	}
+	if (input_->PushKey(DIK_LEFT))
+	{
+		sca.x -= 0.1;
+	}
+
+	if (input_->PushKey(DIK_UP))
+	{
+		sca.z += 0.1;
+	}
+	if (input_->PushKey(DIK_DOWN))
+	{
+		sca.z -= 0.1;
+	}
+
+	if (input_->PushKey(DIK_I))
+	{
+		sca.y += 0.1;
+	}
+	if (input_->PushKey(DIK_K))
+	{
+		sca.y -= 0.1;
+	}
+
+	worldTransform_.scale_ += sca;
+
+	worldTransform_.UpdateMatrix();
 
 	viewProjection_.UpdateMatrix();
 
@@ -169,10 +250,7 @@ void GameScene::Draw() {
 	
 	//player_->Draw(viewProjection_);
 
-	for (int i = 0; i < sizeof(worldTransforms_) / sizeof(worldTransforms_[0]); i++)
-	{
-		model_->Draw(worldTransforms_[i], viewProjection_, textureHandle_);
-	}
+	model_->Draw(worldTransform_, viewProjection_, textureHandle_);
 
 	// 3Dオブジェクト描画後処理
 	Model::PostDraw();
