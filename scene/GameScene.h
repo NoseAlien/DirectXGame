@@ -91,7 +91,7 @@ class GameScene {
 
 	bool viewMovement = true;
 
-	WorldTransform worldTransforms_[9][9];
+	WorldTransform worldTransforms_[9][9][9];
 
 	WorldTransform* playable_ = nullptr;
 

@@ -66,7 +66,7 @@ void GameScene::Initialize() {
 	//3Dモデルの生成
 	model_ = Model::Create();
 
-	viewProjection_.eye = {0,0,-40};
+	viewProjection_.eye = {0,0,-50};
 	viewProjection_.target = { 0,0,0 };
 	viewProjection_.up = {0,1,0};
 
@@ -98,10 +98,13 @@ void GameScene::Initialize() {
 	{
 		for (int j = 0; j < 9; j++)
 		{
-			worldTransforms_[i][j].Initialize();
-			worldTransforms_[i][j].translation_ = { ((float)i - 4) * 3,((float)j - 4) * 3,0 };
-			worldTransforms_[i][j].scale_ = { 1,1,1 };
-			worldTransforms_[i][j].UpdateMatrix();
+			for (int k = 0; k < 9; k++)
+			{
+				worldTransforms_[i][j][k].Initialize();
+				worldTransforms_[i][j][k].translation_ = { ((float)i - 4) * 3,((float)j - 4) * 3,((float)k - 4) * 3 };
+				worldTransforms_[i][j][k].scale_ = { 1,1,1 };
+				worldTransforms_[i][j][k].UpdateMatrix();
+			}
 		}
 	}
 
@@ -178,9 +181,9 @@ void GameScene::Draw() {
 	{
 		for (int j = 0; j < sizeof(worldTransforms_[0]) / sizeof(worldTransforms_[0][0]); j++)
 		{
-			if ((float)i / 2 == i / 2 || (float)j / 2 == j / 2)
+			for (int k = 0; k < sizeof(worldTransforms_[0][0]) / sizeof(worldTransforms_[0][0][0]); k++)
 			{
-				model_->Draw(worldTransforms_[i][j], viewProjection_, textureHandle_);
+				model_->Draw(worldTransforms_[i][j][k], viewProjection_, textureHandle_);
 			}
 		}
 	}
