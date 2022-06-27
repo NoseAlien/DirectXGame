@@ -76,7 +76,7 @@ class GameScene {
 	Model* model_ = nullptr;
 
 	//ビュープロジェクション
-	ViewProjection viewProjection_;
+	ViewProjection viewProjection_[3];
 	//カメラ上方向の角度
 	float viewAngleUp = 0.0f;
 
@@ -90,6 +90,8 @@ class GameScene {
 	bool isDebugCameraActive_ = false;
 
 	bool viewMovement = true;
+
+	int viewNum = 0;
 
 	WorldTransform worldTransform_;
 

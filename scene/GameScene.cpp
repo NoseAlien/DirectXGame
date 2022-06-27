@@ -54,11 +54,7 @@ void GameScene::Initialize() {
 
 	std::random_device seed_gen;
 	std::mt19937_64 engine(seed_gen());
-	std::uniform_real_distribution<float> dist(-10.0,10.0);
-
-	std::random_device seed_genRot;
-	std::mt19937_64 rotEngine(seed_genRot());
-	std::uniform_real_distribution<float> rotDist(0, MathUtility::PI);
+	std::uniform_real_distribution<float> dist(0, MathUtility::PI * 2);
 
 	//ファイル名を取得してテクスチャを読み込む
 	textureHandle_ = TextureManager::Load("napnose.png");
@@ -66,21 +62,24 @@ void GameScene::Initialize() {
 	//3Dモデルの生成
 	model_ = Model::Create();
 
-	viewProjection_.eye = {0,0,-40};
-	viewProjection_.target = { 0,0,0 };
-	viewProjection_.up = {0,1,0};
-
 	/*viewProjection_.fovAngleY = DegreeToRad(10);
 	viewProjection_.aspectRatio = 1;
 	viewProjection_.nearZ = 52.0f;
 	viewProjection_.farZ = 53.0f;*/
 
-	//ビュープロジェクションの初期化
-	viewProjection_.Initialize();
+	for (int i = 0; i < sizeof(viewProjection_) / sizeof(viewProjection_[0]); i++)
+	{
+		float camOrbPos = dist(engine);
+		viewProjection_[i].eye = {sin(camOrbPos) * 20,0,cos(camOrbPos) * 20};
+		viewProjection_[i].target = { 0,0,0 };
+		viewProjection_[i].up = { 0,1,0 };
+		viewProjection_[i].Initialize();
+	}
 
 	//デバッグカメラの生成
 	debugCamera_ = new DebugCamera(400,300);
 
+	/*
 	//軸方向の表示を有効にする
 	AxisIndicator::GetInstance()->SetVisible(true);
 	//軸方向表示が参照するビュープロジェクションを指定する（アドレス渡し）
@@ -88,6 +87,7 @@ void GameScene::Initialize() {
 
 	//ライン描画が参照するビュープロジェクションを指定する（アドレス渡し）
 	PrimitiveDrawer::GetInstance()->SetViewProjection(&debugCamera_->GetViewProjection());
+	*/
 
 	//自キャラの生成
 	//player_ = new Player();
@@ -115,107 +115,26 @@ void GameScene::Update() {
 	}
 #endif
 
-	if (isDebugCameraActive_)
+	/*if (isDebugCameraActive_)
 	{
 		debugCamera_->Update();
 		viewProjection_.matView = debugCamera_->GetViewProjection().matView;
 		viewProjection_.matProjection = debugCamera_->GetViewProjection().matProjection;
+	}*/
+
+	if (input_->TriggerKey(DIK_SPACE))
+	{
+		viewNum++;
+		if (viewNum >= sizeof(viewProjection_)/ sizeof(viewProjection_[0]))
+		{
+			viewNum = 0;
+		}
 	}
 
-	Vector3 move = { 0,0,0 };
-	Vector3 rot = { 0,0,0 };
-	Vector3 sca = { 0,0,0 };
-
-	if (input_->PushKey(DIK_D))
+	for (int i = 0; i < sizeof(viewProjection_) / sizeof(viewProjection_[0]); i++)
 	{
-		move.x += 0.1;
+		viewProjection_[i].UpdateMatrix();
 	}
-	if (input_->PushKey(DIK_A))
-	{
-		move.x -= 0.1;
-	}
-
-	if (input_->PushKey(DIK_W))
-	{
-		move.z += 0.1;
-	}
-	if (input_->PushKey(DIK_S))
-	{
-		move.z -= 0.1;
-	}
-
-	if (input_->PushKey(DIK_Q))
-	{
-		move.y += 0.1;
-	}
-	if (input_->PushKey(DIK_E))
-	{
-		move.y -= 0.1;
-	}
-
-	worldTransform_.translation_ += move;
-
-	if (input_->PushKey(DIK_Z))
-	{
-		rot.x += 0.01;
-	}
-	if (input_->PushKey(DIK_X))
-	{
-		rot.x -= 0.01;
-	}
-
-	if (input_->PushKey(DIK_C))
-	{
-		rot.y += 0.01;
-	}
-	if (input_->PushKey(DIK_V))
-	{
-		rot.y -= 0.01;
-	}
-
-	if (input_->PushKey(DIK_B))
-	{
-		rot.z += 0.01;
-	}
-	if (input_->PushKey(DIK_N))
-	{
-		rot.z -= 0.01;
-	}
-
-	worldTransform_.rotation_ += rot;
-
-	if (input_->PushKey(DIK_RIGHT))
-	{
-		sca.x += 0.1;
-	}
-	if (input_->PushKey(DIK_LEFT))
-	{
-		sca.x -= 0.1;
-	}
-
-	if (input_->PushKey(DIK_UP))
-	{
-		sca.z += 0.1;
-	}
-	if (input_->PushKey(DIK_DOWN))
-	{
-		sca.z -= 0.1;
-	}
-
-	if (input_->PushKey(DIK_I))
-	{
-		sca.y += 0.1;
-	}
-	if (input_->PushKey(DIK_K))
-	{
-		sca.y -= 0.1;
-	}
-
-	worldTransform_.scale_ += sca;
-
-	worldTransform_.UpdateMatrix();
-
-	viewProjection_.UpdateMatrix();
 
 	//player_->Update();
 }
@@ -250,7 +169,7 @@ void GameScene::Draw() {
 	
 	//player_->Draw(viewProjection_);
 
-	model_->Draw(worldTransform_, viewProjection_, textureHandle_);
+	model_->Draw(worldTransform_, viewProjection_[viewNum], textureHandle_);
 
 	// 3Dオブジェクト描画後処理
 	Model::PostDraw();
