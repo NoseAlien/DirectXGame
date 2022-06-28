@@ -67,14 +67,10 @@ void GameScene::Initialize() {
 	viewProjection_.nearZ = 52.0f;
 	viewProjection_.farZ = 53.0f;*/
 
-	for (int i = 0; i < sizeof(viewProjection_) / sizeof(viewProjection_[0]); i++)
-	{
-		float camOrbPos = dist(engine);
-		viewProjection_[i].eye = {sin(camOrbPos) * 20,10,cos(camOrbPos) * 20};
-		viewProjection_[i].target = { 0,0,0 };
-		viewProjection_[i].up = { 0,1,0 };
-		viewProjection_[i].Initialize();
-	}
+	viewProjection_.eye = { 0,0,0 };
+	viewProjection_.target = { 0,0,0 };
+	viewProjection_.up = { 0,1,0 };
+	viewProjection_.Initialize();
 
 	//デバッグカメラの生成
 	debugCamera_ = new DebugCamera(400,300);
@@ -115,28 +111,29 @@ void GameScene::Update() {
 	}
 #endif
 
-	/*if (isDebugCameraActive_)
+	if (isDebugCameraActive_)
 	{
 		debugCamera_->Update();
 		viewProjection_.matView = debugCamera_->GetViewProjection().matView;
 		viewProjection_.matProjection = debugCamera_->GetViewProjection().matProjection;
-	}*/
-
-	if (input_->TriggerKey(DIK_SPACE))
-	{
-		viewNum++;
-		if (viewNum >= sizeof(viewProjection_)/ sizeof(viewProjection_[0]))
-		{
-			viewNum = 0;
-		}
 	}
 
-	for (int i = 0; i < sizeof(viewProjection_) / sizeof(viewProjection_[0]); i++)
-	{
-		viewProjection_[i].UpdateMatrix();
-	}
+	viewOrbitPos += 0.01;
+
+	viewProjection_.eye = { (float)sin(viewOrbitPos) * 20,0,(float)cos(viewOrbitPos) * 20 };
+	viewProjection_.UpdateMatrix();
 
 	//player_->Update();
+
+	debugText_->SetPos(50, 50);
+	debugText_->Printf(
+		"eye:(%f,%f,%f)", viewProjection_.eye.x, viewProjection_.eye.y, viewProjection_.eye.z);
+	debugText_->SetPos(50, 70);
+	debugText_->Printf(
+		"target:(%f,%f,%f)", viewProjection_.target.x, viewProjection_.target.y, viewProjection_.target.z);
+	debugText_->SetPos(50, 90);
+	debugText_->Printf(
+		"up:(%f,%f,%f)", viewProjection_.up.x, viewProjection_.up.y, viewProjection_.up.z);
 }
 
 void GameScene::Draw() {
@@ -169,7 +166,7 @@ void GameScene::Draw() {
 	
 	//player_->Draw(viewProjection_);
 
-	model_->Draw(worldTransform_, viewProjection_[viewNum], textureHandle_);
+	model_->Draw(worldTransform_, viewProjection_, textureHandle_);
 
 	// 3Dオブジェクト描画後処理
 	Model::PostDraw();
