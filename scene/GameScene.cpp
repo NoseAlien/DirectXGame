@@ -67,7 +67,7 @@ void GameScene::Initialize() {
 	viewProjection_.nearZ = 52.0f;
 	viewProjection_.farZ = 53.0f;*/
 
-	viewProjection_.eye = { 0,0,0 };
+	viewProjection_.eye = { 0,0,-30 };
 	viewProjection_.target = { 0,0,0 };
 	viewProjection_.up = { 0,1,0 };
 	viewProjection_.Initialize();
@@ -90,11 +90,21 @@ void GameScene::Initialize() {
 	//自キャラの初期化
 	//player_->Initialize(model_, textureHandle_);
 
-	worldTransform_.Initialize();
-	worldTransform_.translation_ = { 0,0,0 };
-	worldTransform_.rotation_ = { 0,0,0 };
-	worldTransform_.scale_ = { 1,1,1 };
-	worldTransform_.UpdateMatrix();
+	worldTransform_[0].Initialize();
+	worldTransform_[0].translation_ = {0,5,0};
+	worldTransform_[0].rotation_ = {0,0,0};
+	worldTransform_[0].scale_ = {1,1,1};
+	worldTransform_[0].UpdateMatrix();
+	worldTransform_[1].Initialize();
+	worldTransform_[1].translation_ = { -5,-5,0 };
+	worldTransform_[1].rotation_ = { 0,0,0 };
+	worldTransform_[1].scale_ = { 1,1,1 };
+	worldTransform_[1].UpdateMatrix();
+	worldTransform_[2].Initialize();
+	worldTransform_[2].translation_ = { 5,-5,0 };
+	worldTransform_[2].rotation_ = { 0,0,0 };
+	worldTransform_[2].scale_ = { 1,1,1 };
+	worldTransform_[2].UpdateMatrix();
 
 	playable_ = new WorldTransform();
 
@@ -118,9 +128,26 @@ void GameScene::Update() {
 		viewProjection_.matProjection = debugCamera_->GetViewProjection().matProjection;
 	}
 
-	viewOrbitPos += 0.01;
+	if (input_->TriggerKey(DIK_SPACE))
+	{
+		targetIndex++;
+		targetIndex = targetIndex % (sizeof(worldTransform_) / sizeof(worldTransform_[0]));
 
-	viewProjection_.eye = { (float)sin(viewOrbitPos) * 20,0,(float)cos(viewOrbitPos) * 20 };
+		lerpTime = 100;
+	}
+
+	if (lerpTime > 0)
+	{
+		viewProjection_.target += {(worldTransform_[targetIndex].translation_.x - viewProjection_.target.x) / lerpTime,
+			(worldTransform_[targetIndex].translation_.y - viewProjection_.target.y) / lerpTime,
+			(worldTransform_[targetIndex].translation_.z - viewProjection_.target.z) / lerpTime};
+		lerpTime--;
+	}
+	else
+	{
+		viewProjection_.target = worldTransform_[targetIndex].translation_;
+	}
+
 	viewProjection_.UpdateMatrix();
 
 	//player_->Update();
@@ -166,7 +193,10 @@ void GameScene::Draw() {
 	
 	//player_->Draw(viewProjection_);
 
-	model_->Draw(worldTransform_, viewProjection_, textureHandle_);
+	for (int i = 0; i < sizeof(worldTransform_) / sizeof(worldTransform_[0]); i++)
+	{
+		model_->Draw(worldTransform_[i], viewProjection_, textureHandle_);
+	}
 
 	// 3Dオブジェクト描画後処理
 	Model::PostDraw();

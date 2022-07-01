@@ -80,20 +80,17 @@ class GameScene {
 	//カメラ上方向の角度
 	float viewAngleUp = 0.0f;
 
-	//カメラのY軸回転角
-	float viewAngleY = 0.0f;
-
 	//デバッグカメラ
 	DebugCamera* debugCamera_ = nullptr;
 
 	//デバッグカメラ有効
 	bool isDebugCameraActive_ = false;
 
-	bool viewMovement = true;
+	WorldTransform worldTransform_[3];
 
-	float viewOrbitPos = 0;
+	int targetIndex = 0;
 
-	WorldTransform worldTransform_;
+	int lerpTime = 0;
 
 	WorldTransform* playable_ = nullptr;
 
