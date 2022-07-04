@@ -67,7 +67,7 @@ void GameScene::Initialize() {
 	viewProjection_.nearZ = 52.0f;
 	viewProjection_.farZ = 53.0f;*/
 
-	viewProjection_.eye = { 0,0,-30 };
+	viewProjection_.eye = { 0,0,-40 };
 	viewProjection_.target = { 0,0,0 };
 	viewProjection_.up = { 0,1,0 };
 	viewProjection_.Initialize();
@@ -90,21 +90,16 @@ void GameScene::Initialize() {
 	//自キャラの初期化
 	//player_->Initialize(model_, textureHandle_);
 
-	worldTransform_[0].Initialize();
-	worldTransform_[0].translation_ = {0,5,0};
-	worldTransform_[0].rotation_ = {0,0,0};
-	worldTransform_[0].scale_ = {1,1,1};
-	worldTransform_[0].UpdateMatrix();
-	worldTransform_[1].Initialize();
-	worldTransform_[1].translation_ = { -5,-5,0 };
-	worldTransform_[1].rotation_ = { 0,0,0 };
-	worldTransform_[1].scale_ = { 1,1,1 };
-	worldTransform_[1].UpdateMatrix();
-	worldTransform_[2].Initialize();
-	worldTransform_[2].translation_ = { 5,-5,0 };
-	worldTransform_[2].rotation_ = { 0,0,0 };
-	worldTransform_[2].scale_ = { 1,1,1 };
-	worldTransform_[2].UpdateMatrix();
+	for (int i = 0; i < 9; i++)
+	{
+		for (int j = 0; j < 9; j++)
+		{
+			worldTransform_[i][j].Initialize();
+			worldTransform_[i][j].translation_ = { ((float)i - 4) * 3,((float)j - 4) * 3,0 };
+			worldTransform_[i][j].scale_ = { 1,1,1 };
+			worldTransform_[i][j].UpdateMatrix();
+		}
+	}
 
 	playable_ = new WorldTransform();
 
@@ -128,24 +123,44 @@ void GameScene::Update() {
 		viewProjection_.matProjection = debugCamera_->GetViewProjection().matProjection;
 	}
 
-	if (input_->TriggerKey(DIK_SPACE))
-	{
-		targetIndex++;
-		targetIndex = targetIndex % (sizeof(worldTransform_) / sizeof(worldTransform_[0]));
+	Vector3 move = { 0,0,0 };
 
-		lerpTime = 100;
+	if (input_->PushKey(DIK_D))
+	{
+		move.x += 0.1;
+	}
+	if (input_->PushKey(DIK_A))
+	{
+		move.x -= 0.1;
 	}
 
-	if (lerpTime > 0)
+	if (input_->PushKey(DIK_W))
 	{
-		viewProjection_.target += {(worldTransform_[targetIndex].translation_.x - viewProjection_.target.x) / lerpTime,
-			(worldTransform_[targetIndex].translation_.y - viewProjection_.target.y) / lerpTime,
-			(worldTransform_[targetIndex].translation_.z - viewProjection_.target.z) / lerpTime};
-		lerpTime--;
+		move.y += 0.1;
 	}
-	else
+	if (input_->PushKey(DIK_S))
 	{
-		viewProjection_.target = worldTransform_[targetIndex].translation_;
+		move.y -= 0.1;
+	}
+
+	viewProjection_.target += move;
+
+	if (input_->PushKey(DIK_UP))
+	{
+		viewProjection_.fovAngleY -= 0.01;
+	}
+	if (input_->PushKey(DIK_DOWN))
+	{
+		viewProjection_.fovAngleY += 0.01;
+	}
+
+	if (viewProjection_.fovAngleY < 0)
+	{
+		viewProjection_.fovAngleY = 0;
+	}
+	if (viewProjection_.fovAngleY > MathUtility::PI)
+	{
+		viewProjection_.fovAngleY = MathUtility::PI;
 	}
 
 	viewProjection_.UpdateMatrix();
@@ -161,6 +176,9 @@ void GameScene::Update() {
 	debugText_->SetPos(50, 90);
 	debugText_->Printf(
 		"up:(%f,%f,%f)", viewProjection_.up.x, viewProjection_.up.y, viewProjection_.up.z);
+	debugText_->SetPos(50, 110);
+	debugText_->Printf(
+		"fovAngleY:%f", viewProjection_.fovAngleY);
 }
 
 void GameScene::Draw() {
@@ -195,7 +213,10 @@ void GameScene::Draw() {
 
 	for (int i = 0; i < sizeof(worldTransform_) / sizeof(worldTransform_[0]); i++)
 	{
-		model_->Draw(worldTransform_[i], viewProjection_, textureHandle_);
+		for (int j = 0; j < sizeof(worldTransform_) / sizeof(worldTransform_[0]); j++)
+		{
+			model_->Draw(worldTransform_[i][j], viewProjection_, textureHandle_);
+		}
 	}
 
 	// 3Dオブジェクト描画後処理

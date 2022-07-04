@@ -86,7 +86,7 @@ class GameScene {
 	//デバッグカメラ有効
 	bool isDebugCameraActive_ = false;
 
-	WorldTransform worldTransform_[3];
+	WorldTransform worldTransform_[9][9];
 
 	int targetIndex = 0;
 
