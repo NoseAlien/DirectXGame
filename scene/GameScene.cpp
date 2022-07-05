@@ -43,6 +43,7 @@ GameScene::~GameScene() {
 	delete model_;
 	delete debugCamera_;
 	delete player_;
+	delete sprite_;
 }
 
 void GameScene::Initialize() {
@@ -59,13 +60,15 @@ void GameScene::Initialize() {
 	//ファイル名を取得してテクスチャを読み込む
 	textureHandle_ = TextureManager::Load("napnose.png");
 
+	cursorTex = TextureManager::Load("MEGNOSE.png");
+
 	//3Dモデルの生成
 	model_ = Model::Create();
 
-	/*viewProjection_.fovAngleY = DegreeToRad(10);
-	viewProjection_.aspectRatio = 1;
-	viewProjection_.nearZ = 52.0f;
-	viewProjection_.farZ = 53.0f;*/
+	sprite_ = Sprite::Create(cursorTex, { 640,360 });
+	sprite_->SetAnchorPoint({0.5,0.5});
+
+	viewProjection_.fovAngleY = DegreeToRad(50);
 
 	viewProjection_.eye = { 0,0,-40 };
 	viewProjection_.target = { 0,0,0 };
@@ -125,33 +128,38 @@ void GameScene::Update() {
 
 	Vector3 move = { 0,0,0 };
 
-	if (input_->PushKey(DIK_D))
+	if (input_->PushKey(DIK_RIGHT))
 	{
 		move.x += 0.1;
 	}
-	if (input_->PushKey(DIK_A))
+	if (input_->PushKey(DIK_LEFT))
 	{
 		move.x -= 0.1;
 	}
 
-	if (input_->PushKey(DIK_W))
+	if (input_->PushKey(DIK_UP))
 	{
 		move.y += 0.1;
 	}
-	if (input_->PushKey(DIK_S))
+	if (input_->PushKey(DIK_DOWN))
 	{
 		move.y -= 0.1;
 	}
 
 	viewProjection_.target += move;
 
-	if (input_->PushKey(DIK_UP))
+	if (input_->TriggerKey(DIK_SPACE))
 	{
-		viewProjection_.fovAngleY -= 0.01;
+		isScopeMode = !isScopeMode;
 	}
-	if (input_->PushKey(DIK_DOWN))
+
+	if (isScopeMode)
 	{
-		viewProjection_.fovAngleY += 0.01;
+		viewProjection_.fovAngleY = DegreeToRad(20);
+	}
+	else
+	{
+		viewProjection_.fovAngleY = DegreeToRad(50);
 	}
 
 	if (viewProjection_.fovAngleY < 0)
@@ -230,6 +238,11 @@ void GameScene::Draw() {
 	/// <summary>
 	/// ここに前景スプライトの描画処理を追加できる
 	/// </summary>
+	
+	if (isScopeMode)
+	{
+		sprite_->Draw();
+	}
 
 	// デバッグテキストの描画
 	debugText_->DrawAll(commandList);

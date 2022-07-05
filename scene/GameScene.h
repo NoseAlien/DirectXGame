@@ -72,8 +72,12 @@ class GameScene {
 	//テクスチャハンドル
 	uint32_t textureHandle_ = 0;
 
+	uint32_t cursorTex = 0;
+
 	//3Dモデル
 	Model* model_ = nullptr;
+
+	Sprite* sprite_ = nullptr;
 
 	//ビュープロジェクション
 	ViewProjection viewProjection_;
@@ -88,9 +92,7 @@ class GameScene {
 
 	WorldTransform worldTransform_[9][9];
 
-	int targetIndex = 0;
-
-	int lerpTime = 0;
+	bool isScopeMode = false;
 
 	WorldTransform* playable_ = nullptr;
 
