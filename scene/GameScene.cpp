@@ -148,12 +148,32 @@ void GameScene::Update() {
 
 	viewProjection_.target += move;
 
-	isScopeMode = input_->PushKey(DIK_SPACE);
+	if (input_->TriggerKey(DIK_SPACE))
+	{
+		isScopeMode = !isScopeMode;
+		scopeZoom = false;
+	}
+
+	if (input_->TriggerKey(DIK_W))
+	{
+		scopeZoom = true;
+	}
+	if (input_->TriggerKey(DIK_S))
+	{
+		scopeZoom = false;
+	}
 
 	int targetFovDegree;
 	if (isScopeMode)
 	{
-		targetFovDegree = 20;
+		if (scopeZoom)
+		{
+			targetFovDegree = 10;
+		}
+		else
+		{
+			targetFovDegree = 20;
+		}
 	}
 	else
 	{

@@ -94,6 +94,8 @@ class GameScene {
 
 	bool isScopeMode = false;
 
+	bool scopeZoom = false;
+
 	int fovDegree = 50;
 
 	WorldTransform* playable_ = nullptr;
