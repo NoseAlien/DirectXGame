@@ -94,6 +94,8 @@ class GameScene {
 
 	bool isScopeMode = false;
 
+	int fovDegree = 50;
+
 	WorldTransform* playable_ = nullptr;
 
 	//自キャラ

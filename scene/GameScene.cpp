@@ -148,19 +148,29 @@ void GameScene::Update() {
 
 	viewProjection_.target += move;
 
-	if (input_->TriggerKey(DIK_SPACE))
-	{
-		isScopeMode = !isScopeMode;
-	}
+	isScopeMode = input_->PushKey(DIK_SPACE);
 
+	int targetFovDegree;
 	if (isScopeMode)
 	{
-		viewProjection_.fovAngleY = DegreeToRad(20);
+		targetFovDegree = 20;
 	}
 	else
 	{
-		viewProjection_.fovAngleY = DegreeToRad(50);
+		targetFovDegree = 50;
 	}
+
+	if (fovDegree < targetFovDegree)
+	{
+		fovDegree++;
+	}
+	if (fovDegree > targetFovDegree)
+	{
+		fovDegree--;
+	}
+
+	viewProjection_.fovAngleY = DegreeToRad(fovDegree);
+
 
 	if (viewProjection_.fovAngleY < 0)
 	{
