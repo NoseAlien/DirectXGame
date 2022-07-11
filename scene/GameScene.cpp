@@ -93,16 +93,50 @@ void GameScene::Initialize() {
 	//自キャラの初期化
 	//player_->Initialize(model_, textureHandle_);
 
-	for (int i = 0; i < 9; i++)
-	{
-		for (int j = 0; j < 9; j++)
-		{
-			worldTransform_[i][j].Initialize();
-			worldTransform_[i][j].translation_ = { ((float)i - 4) * 3,((float)j - 4) * 3,0 };
-			worldTransform_[i][j].scale_ = { 1,1,1 };
-			worldTransform_[i][j].UpdateMatrix();
-		}
-	}
+	worldTransform_[kRoot].Initialize();
+	worldTransform_[kRoot].translation_ = { 0,0,0 };
+	worldTransform_[kRoot].UpdateMatrix();
+
+	worldTransform_[kSpine].Initialize();
+	worldTransform_[kSpine].translation_ = { 0,4.5,0 };
+	worldTransform_[kSpine].parent_ = &worldTransform_[kRoot];
+	worldTransform_[kSpine].UpdateMatrix();
+
+	worldTransform_[kChest].Initialize();
+	worldTransform_[kChest].translation_ = { 0,0,0 };
+	worldTransform_[kChest].parent_ = &worldTransform_[kSpine];
+	worldTransform_[kChest].UpdateMatrix();
+
+	worldTransform_[kHead].Initialize();
+	worldTransform_[kHead].translation_ = { 0,4.5,0 };
+	worldTransform_[kHead].parent_ = &worldTransform_[kChest];
+	worldTransform_[kHead].UpdateMatrix();
+
+	worldTransform_[kArmL].Initialize();
+	worldTransform_[kArmL].translation_ = { -4.5,0,0 };
+	worldTransform_[kArmL].parent_ = &worldTransform_[kChest];
+	worldTransform_[kArmL].UpdateMatrix();
+
+	worldTransform_[kArmR].Initialize();
+	worldTransform_[kArmR].translation_ = { 4.5,0,0 };
+	worldTransform_[kArmR].parent_ = &worldTransform_[kChest];
+	worldTransform_[kArmR].UpdateMatrix();
+
+	worldTransform_[kHip].Initialize();
+	worldTransform_[kHip].translation_ = { 0,-4.5,0 };
+	worldTransform_[kHip].parent_ = &worldTransform_[kSpine];
+	worldTransform_[kHip].UpdateMatrix();
+
+	worldTransform_[kLegL].Initialize();
+	worldTransform_[kLegL].translation_ = { -4.5,-4.5,0 };
+	worldTransform_[kLegL].parent_ = &worldTransform_[kHip];
+	worldTransform_[kLegL].UpdateMatrix();
+
+	worldTransform_[kLegR].Initialize();
+	worldTransform_[kLegR].translation_ = { 4.5,-4.5,0 };
+	worldTransform_[kLegR].parent_ = &worldTransform_[kHip];
+	worldTransform_[kLegR].UpdateMatrix();
+
 
 	playable_ = new WorldTransform();
 
@@ -126,79 +160,37 @@ void GameScene::Update() {
 		viewProjection_.matProjection = debugCamera_->GetViewProjection().matProjection;
 	}
 
-	Vector3 move = { 0,0,0 };
+	if (input_->PushKey(DIK_D))
+	{
+		worldTransform_[kRoot].rotation_.y += 0.01;
+	}
+	else if (input_->PushKey(DIK_A))
+	{
+		worldTransform_[kRoot].rotation_.y -= 0.01;
+	}
 
+	worldTransform_[kArmL].rotation_.x += 0.05;
+	worldTransform_[kArmR].rotation_.x -= 0.05;
+	worldTransform_[kLegL].rotation_.x -= 0.05;
+	worldTransform_[kLegR].rotation_.x += 0.05;
+
+
+	viewProjection_.UpdateMatrix();
+
+	Vector3 move = { 0,0,0 };
 	if (input_->PushKey(DIK_RIGHT))
 	{
-		move.x += 0.1;
+		move.x += 0.1f;
 	}
-	if (input_->PushKey(DIK_LEFT))
+	else if (input_->PushKey(DIK_LEFT))
 	{
-		move.x -= 0.1;
+		move.x -= 0.1f;
 	}
+	worldTransform_[0].translation_ += move;
 
-	if (input_->PushKey(DIK_UP))
+	for (int i = 0; i < kNumPartID; i++)
 	{
-		move.y += 0.1;
-	}
-	if (input_->PushKey(DIK_DOWN))
-	{
-		move.y -= 0.1;
-	}
-
-	viewProjection_.target += move;
-
-	if (input_->TriggerKey(DIK_SPACE))
-	{
-		isScopeMode = !isScopeMode;
-		scopeZoom = false;
-	}
-
-	if (input_->TriggerKey(DIK_W))
-	{
-		scopeZoom = true;
-	}
-	if (input_->TriggerKey(DIK_S))
-	{
-		scopeZoom = false;
-	}
-
-	int targetFovDegree;
-	if (isScopeMode)
-	{
-		if (scopeZoom)
-		{
-			targetFovDegree = 10;
-		}
-		else
-		{
-			targetFovDegree = 20;
-		}
-	}
-	else
-	{
-		targetFovDegree = 50;
-	}
-
-	if (fovDegree < targetFovDegree)
-	{
-		fovDegree++;
-	}
-	if (fovDegree > targetFovDegree)
-	{
-		fovDegree--;
-	}
-
-	viewProjection_.fovAngleY = DegreeToRad(fovDegree);
-
-
-	if (viewProjection_.fovAngleY < 0)
-	{
-		viewProjection_.fovAngleY = 0;
-	}
-	if (viewProjection_.fovAngleY > MathUtility::PI)
-	{
-		viewProjection_.fovAngleY = MathUtility::PI;
+		worldTransform_[i].UpdateMatrix();
 	}
 
 	viewProjection_.UpdateMatrix();
@@ -249,12 +241,11 @@ void GameScene::Draw() {
 	
 	//player_->Draw(viewProjection_);
 
-	for (int i = 0; i < sizeof(worldTransform_) / sizeof(worldTransform_[0]); i++)
+	model_->Draw(worldTransform_[0], viewProjection_, textureHandle_);
+
+	for (int i = 0; i < kNumPartID; i++)
 	{
-		for (int j = 0; j < sizeof(worldTransform_) / sizeof(worldTransform_[0]); j++)
-		{
-			model_->Draw(worldTransform_[i][j], viewProjection_, textureHandle_);
-		}
+		model_->Draw(worldTransform_[i], viewProjection_, textureHandle_);
 	}
 
 	// 3Dオブジェクト描画後処理

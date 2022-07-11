@@ -90,7 +90,7 @@ class GameScene {
 	//デバッグカメラ有効
 	bool isDebugCameraActive_ = false;
 
-	WorldTransform worldTransform_[9][9];
+	WorldTransform worldTransform_[100];
 
 	bool isScopeMode = false;
 
