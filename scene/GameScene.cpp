@@ -169,10 +169,29 @@ void GameScene::Update() {
 		worldTransform_[kRoot].rotation_.y -= 0.01;
 	}
 
-	worldTransform_[kArmL].rotation_.x += 0.05;
-	worldTransform_[kArmR].rotation_.x -= 0.05;
-	worldTransform_[kLegL].rotation_.x -= 0.05;
-	worldTransform_[kLegR].rotation_.x += 0.05;
+	if (armAndLegAngle > DegreeToRad(45))
+	{
+		rotFlag = false;
+	}
+
+	if (armAndLegAngle < DegreeToRad(-45))
+	{
+		rotFlag = true;
+	}
+
+	if (rotFlag)
+	{
+		armAndLegAngle += 0.05;
+	}
+	else
+	{
+		armAndLegAngle -= 0.05;
+	}
+
+	worldTransform_[kArmL].rotation_.x = armAndLegAngle;
+	worldTransform_[kArmR].rotation_.x = -armAndLegAngle;
+	worldTransform_[kLegL].rotation_.x = -armAndLegAngle;
+	worldTransform_[kLegR].rotation_.x = armAndLegAngle;
 
 
 	viewProjection_.UpdateMatrix();
@@ -259,11 +278,6 @@ void GameScene::Draw() {
 	/// <summary>
 	/// ここに前景スプライトの描画処理を追加できる
 	/// </summary>
-	
-	if (isScopeMode)
-	{
-		sprite_->Draw();
-	}
 
 	// デバッグテキストの描画
 	debugText_->DrawAll(commandList);

@@ -92,11 +92,9 @@ class GameScene {
 
 	WorldTransform worldTransform_[100];
 
-	bool isScopeMode = false;
+	float armAndLegAngle = 0;
 
-	bool scopeZoom = false;
-
-	int fovDegree = 50;
+	bool rotFlag = false;
 
 	WorldTransform* playable_ = nullptr;
 
