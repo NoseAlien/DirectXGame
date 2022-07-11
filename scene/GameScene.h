@@ -52,9 +52,13 @@ class GameScene {
 		kHead,//頭
 		kArmL,//左腕
 		kArmR,//右腕
+		kHandL,//左手
+		kHandR,//右手
 		kHip,//尻
 		kLegL,//左足
 		kLegR,//右足
+		kFootL,//左足先
+		kFootR,//右足先
 
 		kNumPartID
 	};

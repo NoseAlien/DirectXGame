@@ -122,20 +122,40 @@ void GameScene::Initialize() {
 	worldTransform_[kArmR].parent_ = &worldTransform_[kChest];
 	worldTransform_[kArmR].UpdateMatrix();
 
+	worldTransform_[kHandL].Initialize();
+	worldTransform_[kHandL].translation_ = { 0,-3,0 };
+	worldTransform_[kHandL].parent_ = &worldTransform_[kArmL];
+	worldTransform_[kHandL].UpdateMatrix();
+
+	worldTransform_[kHandR].Initialize();
+	worldTransform_[kHandR].translation_ = { 0,-3,0 };
+	worldTransform_[kHandR].parent_ = &worldTransform_[kArmR];
+	worldTransform_[kHandR].UpdateMatrix();
+
 	worldTransform_[kHip].Initialize();
 	worldTransform_[kHip].translation_ = { 0,-4.5,0 };
 	worldTransform_[kHip].parent_ = &worldTransform_[kSpine];
 	worldTransform_[kHip].UpdateMatrix();
 
 	worldTransform_[kLegL].Initialize();
-	worldTransform_[kLegL].translation_ = { -4.5,-4.5,0 };
+	worldTransform_[kLegL].translation_ = { -2,-4.5,0 };
 	worldTransform_[kLegL].parent_ = &worldTransform_[kHip];
 	worldTransform_[kLegL].UpdateMatrix();
 
 	worldTransform_[kLegR].Initialize();
-	worldTransform_[kLegR].translation_ = { 4.5,-4.5,0 };
+	worldTransform_[kLegR].translation_ = { 2,-4.5,0 };
 	worldTransform_[kLegR].parent_ = &worldTransform_[kHip];
 	worldTransform_[kLegR].UpdateMatrix();
+
+	worldTransform_[kFootL].Initialize();
+	worldTransform_[kFootL].translation_ = { 0,-3,0 };
+	worldTransform_[kFootL].parent_ = &worldTransform_[kLegL];
+	worldTransform_[kFootL].UpdateMatrix();
+
+	worldTransform_[kFootR].Initialize();
+	worldTransform_[kFootR].translation_ = { 0,-3,0 };
+	worldTransform_[kFootR].parent_ = &worldTransform_[kLegR];
+	worldTransform_[kFootR].UpdateMatrix();
 
 
 	playable_ = new WorldTransform();
@@ -179,13 +199,16 @@ void GameScene::Update() {
 		rotFlag = true;
 	}
 
-	if (rotFlag)
+	if (input_->PushKey(DIK_W))
 	{
-		armAndLegAngle += 0.05;
-	}
-	else
-	{
-		armAndLegAngle -= 0.05;
+		if (rotFlag)
+		{
+			armAndLegAngle += 0.05;
+		}
+		else
+		{
+			armAndLegAngle -= 0.05;
+		}
 	}
 
 	worldTransform_[kArmL].rotation_.x = armAndLegAngle;
