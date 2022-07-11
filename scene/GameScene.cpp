@@ -199,25 +199,47 @@ void GameScene::Update() {
 		rotFlag = true;
 	}
 
+	float dashSpeed = 0.05;
+	if (input_->PushKey(DIK_LSHIFT))
+	{
+		dashSpeed = 0.1;
+	}
+
 	if (input_->PushKey(DIK_W))
 	{
 		if (rotFlag)
 		{
-			armAndLegAngle += 0.05;
+			armAndLegAngle += dashSpeed;
 		}
 		else
 		{
-			armAndLegAngle -= 0.05;
+			armAndLegAngle -= dashSpeed;
 		}
+	}
+	else
+	{
+		armAndLegAngle /= 1.1;
+	}
+
+	if (input_->TriggerKey(DIK_SPACE) && jumpState == 0)
+	{
+		jumpState = 1;
+	}
+
+	if (jumpState > 0)
+	{
+		jumpState -= 0.01;
+	}
+
+	if (jumpState < 0)
+	{
+		jumpState = 0;
 	}
 
 	worldTransform_[kArmL].rotation_.x = armAndLegAngle;
 	worldTransform_[kArmR].rotation_.x = -armAndLegAngle;
 	worldTransform_[kLegL].rotation_.x = -armAndLegAngle;
 	worldTransform_[kLegR].rotation_.x = armAndLegAngle;
-
-
-	viewProjection_.UpdateMatrix();
 
 	Vector3 move = { 0,0,0 };
 	if (input_->PushKey(DIK_RIGHT))
@@ -228,7 +250,9 @@ void GameScene::Update() {
 	{
 		move.x -= 0.1f;
 	}
-	worldTransform_[0].translation_ += move;
+	worldTransform_[kRoot].translation_ += move;
+
+	worldTransform_[kRoot].translation_.y = sin(jumpState * MathUtility::PI) * 8;
 
 	for (int i = 0; i < kNumPartID; i++)
 	{

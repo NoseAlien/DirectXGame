@@ -100,6 +100,8 @@ class GameScene {
 
 	bool rotFlag = false;
 
+	float jumpState = 0;
+
 	WorldTransform* playable_ = nullptr;
 
 	//自キャラ
