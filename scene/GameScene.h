@@ -74,14 +74,22 @@ class GameScene {
 	/// </summary>
 	
 	//テクスチャハンドル
-	uint32_t textureHandle_ = 0;
+	//uint32_t textureHandle_ = 0;
 
-	uint32_t cursorTex = 0;
+	//uint32_t cursorTex = 0;
+
+	uint32_t napTexture = 0;
+
+	uint32_t MEGtexture = 0;
 
 	//3Dモデル
 	Model* model_ = nullptr;
 
 	Sprite* sprite_ = nullptr;
+
+	WorldTransform target;
+
+	bool isHit = false;
 
 	//ビュープロジェクション
 	ViewProjection viewProjection_;
@@ -93,16 +101,6 @@ class GameScene {
 
 	//デバッグカメラ有効
 	bool isDebugCameraActive_ = false;
-
-	WorldTransform worldTransform_[100];
-
-	float armAndLegAngle = 0;
-
-	bool rotFlag = false;
-
-	float jumpState = 0;
-
-	WorldTransform* playable_ = nullptr;
 
 	//自キャラ
 	Player* player_ = nullptr;
